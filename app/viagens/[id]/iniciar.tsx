@@ -1,0 +1,104 @@
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { ActivityIndicator, Alert, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Layout } from '~/src/components/Layout'
+import { useFreight } from '~/src/hooks/useFreight'
+import Feedback from '~/src/components/Layout/Feedback'
+import { Button, MaskedInput } from '~/src/components/Form'
+import { numberMask } from '~/src/utils/forms'
+import { useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import api from '~/src/services/api'
+type RouteParams = {
+  id: string
+}
+
+export default function App() {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const insets = useSafeAreaInsets()
+  const { id } = useLocalSearchParams<RouteParams>()
+  const { data: item, loading } = useFreight(Number(id))
+  const [km, setKm] = useState('')
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post('/driver/freight/starting-trip', {
+        freight_id: Number(id),
+        truck_current_km: Number(km.replace(/\D/g, '')),
+      })
+
+      if (response.status !== 200) {
+        throw new Error('Erro ao iniciar viagem')
+      }
+
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.refetchQueries({
+        queryKey: ['financialStatement'],
+      })
+      router.back()
+    },
+    onError: () => {
+      // Tratar erro
+      Alert.alert('Erro', 'Erro ao iniciar viagem')
+    },
+  })
+
+  if (!item && loading) {
+    return (
+      <Layout
+        style={{
+          paddingBottom: insets.bottom,
+        }}
+        className="items-center justify-center w-full h-full bg-zinc-100 "
+      >
+        <ActivityIndicator size="large" color="#1757D4" />
+      </Layout>
+    )
+  }
+
+  return (
+    <Layout
+      style={{
+        paddingBottom: insets.bottom,
+      }}
+      className="w-full h-full bg-zinc-100 "
+    >
+      <Feedback.Root
+        title="Iniciar rota"
+        type="iniciar"
+        onClose={() => {
+          router.back()
+        }}
+      >
+        <Feedback.Heading className="py-6 text-base font-medium text-left text-black">
+          Antes de iniciar sua viagem, informe a quilometragem inicial.
+        </Feedback.Heading>
+        <View
+          className="justify-between flex-1"
+          style={{ paddingBottom: insets.bottom + 20 }}
+        >
+          <View className="flex flex-row items-center justify-between gap-x-4">
+            <View className="flex-1">
+              <MaskedInput
+                mask={numberMask}
+                value={km}
+                onChangeText={setKm}
+                keyboardType="numeric"
+              />
+            </View>
+            <Text className="-mt-4 text-lg font-medium ">km</Text>
+          </View>
+          <Button
+            loading={mutation.isPending}
+            onPress={() => mutation.mutateAsync()}
+          >
+            Enviar
+          </Button>
+        </View>
+      </Feedback.Root>
+    </Layout>
+  )
+}

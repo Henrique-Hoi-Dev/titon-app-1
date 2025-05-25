@@ -1,0 +1,37 @@
+{
+  "cli": {
+    "version": ">= 10.2.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "yarn": "1.22.18",
+      "credentialsSource": "remote"
+    },
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "extends": "production",
+      "channel": "preview",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "image": "macos-sonoma-14.6-xcode-16.1"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

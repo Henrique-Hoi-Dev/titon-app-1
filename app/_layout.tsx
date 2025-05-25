@@ -1,59 +1,59 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import 'react-native-get-random-values'
+import { Stack } from 'expo-router'
+import { PortalHost, PortalProvider } from '@gorhom/portal'
+import { AuthProvider } from '~/src/context/auth'
+import { BottomTab } from '~/src/components/Layout'
+import { ColorSchemeProvider } from '~/src/context/colorSchema'
+import AppProvider from '~/src/context/app'
+import AvisoOffline from '~/src/components/AvisoOffline'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from '~/src/services/client'
+import Toast, { BaseToast } from 'react-native-toast-message'
+import { FeedbackProvider } from '~/src/context/feedback'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import RelativeTime from 'dayjs/plugin/relativeTime'
+import dayjs from 'dayjs'
+require('dayjs/locale/pt-br')
 
-import { useColorScheme } from '@/components/useColorScheme';
+dayjs.locale('pt-br')
+dayjs.extend(RelativeTime)
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
-
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+export default function Layout() {
+  const insets = useSafeAreaInsets()
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
-  );
+    <ColorSchemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <PortalProvider>
+            <AppProvider>
+              <FeedbackProvider>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                />
+                <PortalHost name="portalHost" />
+                <BottomTab />
+                <AvisoOffline />
+              </FeedbackProvider>
+            </AppProvider>
+          </PortalProvider>
+          <Toast
+            topOffset={20 + insets.top}
+            position="top"
+            config={{
+              error: (props) => (
+                <BaseToast
+                  style={{ borderLeftColor: '#EF4444' }}
+                  text2NumberOfLines={3}
+                  {...props}
+                />
+              ),
+            }}
+          />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ColorSchemeProvider>
+  )
 }

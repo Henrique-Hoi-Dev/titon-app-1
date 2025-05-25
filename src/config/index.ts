@@ -23,4 +23,12 @@ const envSchema = z
     },
   }))
 
-export default envSchema.parse(process.env)
+export default envSchema.parse({
+  EXPO_PUBLIC_APP_NAME: "logbook",
+  EXPO_PUBLIC_APP_TITLE: "Logbook",
+  EXPO_PUBLIC_APP_ENV: "production",
+  EXPO_PUBLIC_APP_API_ENV: "production",
+  EXPO_PUBLIC_APP_URL: "https://api-driver-titon.herokuapp.com",
+  EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID: null,
+  EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID: null,
+})

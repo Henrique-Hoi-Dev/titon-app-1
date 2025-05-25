@@ -1,4 +1,4 @@
-// const IS_DEV = process.env.EXPO_PUBLIC_APP_ENV !== 'production'
+const IS_DEV = process.env.EXPO_PUBLIC_APP_ENV !== 'production'
 
 export default {
   expo: {
@@ -29,12 +29,12 @@ export default {
     plugins: [
       'expo-router',
       'expo-font',
-      // [
-      //   'onesignal-expo-plugin',
-      //   {
-      //     mode: IS_DEV ? 'development' : 'production',
-      //   },
-      // ],
+      [
+        'onesignal-expo-plugin',
+        {
+          mode: IS_DEV ? 'development' : 'production',
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,

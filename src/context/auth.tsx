@@ -10,7 +10,7 @@ import { useRouter, useSegments } from 'expo-router'
 import Api from '../services/api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import config from '../config'
-// import { OneSignal, UserChangedState } from 'react-native-onesignal'
+import { OneSignal, UserChangedState } from 'react-native-onesignal'
 import { Platform } from 'react-native'
 
 export type User = {
@@ -127,28 +127,28 @@ export function AuthProvider(props: PropsWithChildren) {
     bootstrapAsync()
   }, [handeProfile, token])
 
-  // useEffect(() => {
-  //   if (user) {
-  //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //     // @ts-ignore
-  //     OneSignal.initialize(config.oneSignalAppId[Platform.OS])
-  //     OneSignal.Notifications.requestPermission(true)
-  //   }
+  useEffect(() => {
+    if (user) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      OneSignal.initialize(config.oneSignalAppId[Platform.OS])
+      OneSignal.Notifications.requestPermission(true)
+    }
 
-  //   const listener = (event: UserChangedState) => {
-  //     if (event.current.onesignalId) {
-  //       Api.post('/driver/activate/receive-notifications', {
-  //         player_id: event.current.onesignalId,
-  //       })
-  //     }
-  //   }
+    const listener = (event: UserChangedState) => {
+      if (event.current.onesignalId) {
+        Api.post('/driver/activate/receive-notifications', {
+          player_id: event.current.onesignalId,
+        })
+      }
+    }
 
-  //   OneSignal.User.addEventListener('change', listener)
+    OneSignal.User.addEventListener('change', listener)
 
-  //   return () => {
-  //     OneSignal.User.removeEventListener('change', listener)
-  //   }
-  // }, [user])
+    return () => {
+      OneSignal.User.removeEventListener('change', listener)
+    }
+  }, [user])
 
   return (
     <AuthContext.Provider

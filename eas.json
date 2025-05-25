@@ -6,28 +6,27 @@
   "build": {
     "base": {
       "yarn": "1.22.18",
-      "credentialsSource": "remote"
+      "credentialsSource": "remote",
+      "node": "22.14.0",
+      "environment": "production"
     },
     "development": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
       "extends": "production",
-      "channel": "preview",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "channel": "production",
+      "extends": "base",
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
-      },
-      "ios": {
-        "image": "macos-sonoma-14.6-xcode-16.1"
       }
     }
   },

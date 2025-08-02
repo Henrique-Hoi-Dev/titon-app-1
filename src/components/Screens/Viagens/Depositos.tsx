@@ -8,10 +8,12 @@ import moment from 'moment'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import Button from '../../Button'
+import { useFreight } from '~/src/hooks'
 
-export default function Depositos({ id }: { id?: number }) {
+export default function Depositos({ id }: { id: number }) {
   const { width } = useWindowDimensions()
-  const { data, loading, fetch: getDeposits } = useDeposits(id || 0)
+  const { data: freight } = useFreight(id)
+  const { data, loading, fetch: getDeposits } = useDeposits(id)
 
   const groupedByCreatedAt = Object.values(
     _.groupBy(
@@ -115,21 +117,23 @@ export default function Depositos({ id }: { id?: number }) {
           </View>
         )}
       />
-      <View className="absolute w-full px-5 bottom-8 z-50">
-        <Button
-          onPress={() => router.navigate(`/viagens/${id}/depositos/new`)}
-          icon={() => (
-            <MaterialCommunityIcons
-              name="plus-circle-outline"
-              color="white"
-              size={24}
-            />
-          )}
-          className="shadow-sm"
-        >
-          Novo depósito
-        </Button>
-      </View>
+      {freight && ['STARTING_TRIP'].includes(freight.status) && (
+        <View className="absolute w-full px-5 bottom-8 z-50">
+          <Button
+            onPress={() => router.navigate(`/viagens/${id}/depositos/new`)}
+            icon={() => (
+              <MaterialCommunityIcons
+                name="plus-circle-outline"
+                color="white"
+                size={24}
+              />
+            )}
+            className="shadow-sm"
+          >
+            Novo depósito
+          </Button>
+        </View>
+      )}
     </>
   )
 }

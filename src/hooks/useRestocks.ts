@@ -3,6 +3,8 @@ import Api from '../services/api'
 import { toJsonBody } from '../utils/forms'
 import { useQuery } from '@tanstack/react-query'
 import { useMutation } from './useMutation'
+import { useFreight } from './useFreight'
+import { ErrorKey } from '../utils/errors'
 
 export declare type Restock = {
   id: number
@@ -49,27 +51,11 @@ type StoreType = {
 
 export type UseRestocksOptions = {
   onSuccess?: (data: RestocksResponse) => void
-  onError?: () => void
+  onError?: (key: ErrorKey) => void
 }
 
 export function useRestocks(freightId: number, options?: UseRestocksOptions) {
-  const query = useQuery({
-    queryKey: ['restocks', freightId],
-    queryFn: async () => {
-      const response = await Api.get<RestocksFetchResponse>(
-        `/driver/restocks`,
-        {
-          freight_id: freightId,
-        },
-      )
-
-      if (response.status !== 200) {
-        throw Error('Erro ao buscar os abastecimentos')
-      }
-
-      return response.data.data.map(mapData)
-    },
-  })
+  const query = useFreight(freightId)
 
   const mutation = useMutation({
     mutationFn: async ({ freightId, restock }: StoreType) => {
@@ -79,28 +65,28 @@ export function useRestocks(freightId: number, options?: UseRestocksOptions) {
       })
 
       const response = await Api.post<{ data: RestocksResponse }>(
-        '/driver/restock',
+        '/v1/driver/restock',
         data,
       )
 
       if (response.status !== 201) {
-        throw Error('Erro ao criar viagem')
+        throw Error('Erro ao criar abastecimento')
       }
 
       return response.data
     },
     onSuccess: (data) => {
       options?.onSuccess?.(data.data)
-      query.refetch()
+      query.fetch()
     },
     onError: options?.onError,
   })
 
   return {
-    loading: query.isFetching,
+    loading: query.loading,
     mutating: mutation.isPending,
-    data: query.data,
-    fetch: query.refetch,
+    data: query.data?.restock || [],
+    fetch: query.fetch,
     store: mutation,
     error: query.error || mutation.error,
   }

@@ -1,36 +1,44 @@
 import { useQuery } from '@tanstack/react-query'
 import {
+  FreightFile,
   FreightResponse,
   FreightStatus,
   useFinancialStatement,
 } from './useFinancialStatement'
 import Api from '../services/api'
+import { CamelCase } from '../@types/utils'
+import { Restock } from './useRestocks'
+import { Travel } from './useTravels'
+import { Deposit } from './useDeposits'
 
 export declare type Freight = {
   id: number
   financial_statements_id: number
   start_freight_city: string
-  final_freight_city: string
-  location_of_the_truck: string
+  end_freight_city: string
   is_on_the_way: boolean
-  contractor: string
+  truck_location: string
+  contractor_name: string
   truck_current_km: number
-  liter_of_fuel_per_km: number
-  preview_tonne: number
-  preview_value_diesel: number
-  value_tonne: number
-  status: FreightStatus
-  tons_loaded?: number
-  toll_value?: number
-  truck_km_completed_trip?: number
-  discharge?: string
-  img_proof_cte?: string
-  img_proof_ticket?: string
-  img_proof_freight_letter?: string
+  fuel_avg_per_km: number
+  estimated_tonnage: number
+  estimated_fuel_cost: number
+  ton_value: number
+  route_distance_km: string
+  route_duration: string
+  status: "DRAFT" | "PENDING" | "APPROVED" | "DENIED" | "FINISHED" | "STARTING_TRIP"
+  tons_loaded: any
+  toll_cost: any
+  truck_km_end_trip: any
+  discharge: any
+  img_proof_cte: FreightFile
+  img_proof_ticket: FreightFile
+  img_proof_freight_letter: FreightFile
   createdAt: Date
   updatedAt: Date
-  distance: string
-  duration: string
+  restock: Restock[],
+  travelExpense: Travel[],
+  depositMoney: Deposit[]
 }
 
 export function useFreights() {
@@ -98,11 +106,12 @@ export function useFreights() {
 }
 
 export function useFreight(freightId: number) {
+  const { data: financialStatement } = useFinancialStatement()
   const query = useQuery({
     queryKey: ['freight', freightId],
     queryFn: async () => {
-      const response = await Api.get<{ data: FreightResponse }>(
-        `/driver/freight/${freightId}`,
+      const response = await Api.get<{ data: CamelCase<FreightResponse, 'createdAt' | 'updatedAt' | 'restock' | 'travelExpense' | 'depositMoney'> }>(
+        `/v1/driver/freight/${freightId}/${financialStatement?.id || ''}`,
       )
 
       if (response.status !== 200) {
@@ -121,27 +130,32 @@ export function useFreight(freightId: number) {
   }
 }
 
-export const mapData = (freight: FreightResponse): Freight => ({
+export const mapData = (freight: CamelCase<FreightResponse, 'createdAt' | 'updatedAt' | 'restock' | 'travelExpense' | 'depositMoney'>): Freight => ({
   id: freight.id,
-  financial_statements_id: freight.financial_statements_id,
-  start_freight_city: freight.start_freight_city,
-  final_freight_city: freight.final_freight_city,
-  location_of_the_truck: freight.location_of_the_truck,
-  is_on_the_way: freight.location_of_the_truck !== freight.final_freight_city,
-  contractor: freight.contractor,
-  truck_current_km: freight.truck_current_km,
-  liter_of_fuel_per_km: freight.liter_of_fuel_per_km,
-  preview_tonne: freight.preview_tonne,
-  preview_value_diesel: freight.preview_value_diesel,
-  value_tonne: freight.value_tonne,
+  financial_statements_id: freight.financialStatementsId,
+  start_freight_city: freight.startFreightCity,
+  end_freight_city: freight.endFreightCity,
+  truck_location: freight.truckLocation,
+  is_on_the_way: freight.truckLocation !== freight.endFreightCity,
+  contractor_name: freight.contractorName,
+  truck_current_km: freight.truckCurrentKm,
+  fuel_avg_per_km: freight.fuelAvgPerKm,
+  estimated_tonnage: freight.estimatedTonnage,
+  estimated_fuel_cost: freight.estimatedFuelCost,
+  ton_value: freight.tonValue,
   status: freight.status,
-  tons_loaded: freight.tons_loaded || undefined,
-  toll_value: freight.toll_value || undefined,
-  truck_km_completed_trip: freight.truck_km_completed_trip || undefined,
+  tons_loaded: freight.tonsLoaded || undefined,
+  toll_cost: freight.tollCost || undefined,
+  truck_km_end_trip: freight.truckKmEndTrip || undefined,
   discharge: freight.discharge || undefined,
-  img_proof_cte: freight.img_proof_cte || undefined,
-  img_proof_ticket: freight.img_proof_ticket || undefined,
-  img_proof_freight_letter: freight.img_proof_freight_letter || undefined,
+  img_proof_cte: freight.imgProofCte || undefined,
+  img_proof_ticket: freight.imgProofTicket || undefined,
+  img_proof_freight_letter: freight.imgProofFreightLetter || undefined,
   createdAt: new Date(freight.createdAt),
   updatedAt: new Date(freight.updatedAt),
+  route_distance_km: freight.routeDistanceKm,
+  route_duration: freight.routeDuration,
+  restock: freight.restock || [],
+  travelExpense: freight.travelExpense || [],
+  depositMoney: freight.depositMoney || [],
 })

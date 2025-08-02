@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import Api from '../services/api'
 import { Freight, mapData as freightMapData } from './useFreight'
+import { Restock } from './useRestocks'
+import { Travel } from './useTravels'
+import { Deposit } from './useDeposits'
+import { toCamelCase } from '../utils'
 
 export type FreightStatus = Uppercase<
   'draft' | 'pending' | 'approved' | 'denied' | 'finished' | 'starting_trip'
@@ -17,24 +21,30 @@ export type FreightResponse = {
   id: number
   financial_statements_id: number
   start_freight_city: string
-  final_freight_city: string
-  location_of_the_truck: string
-  contractor: string
+  end_freight_city: string
+  is_on_the_way: boolean
+  truck_location: string
+  contractor_name: string
   truck_current_km: number
-  liter_of_fuel_per_km: number
-  preview_tonne: number
-  preview_value_diesel: number
-  value_tonne: number
-  status: FreightStatus
-  tons_loaded: number | null
-  toll_value: number | null
-  truck_km_completed_trip: number | null
-  discharge: string | null
-  img_proof_cte: FreightFile | null
-  img_proof_ticket: FreightFile | null
-  img_proof_freight_letter: FreightFile | null
+  fuel_avg_per_km: number
+  estimated_tonnage: number
+  estimated_fuel_cost: number
+  ton_value: number
+  route_distance_km: string
+  route_duration: string
+  status: "DRAFT" | "PENDING" | "APPROVED" | "DENIED" | "FINISHED" | "STARTING_TRIP"
+  tons_loaded: any
+  toll_cost: any
+  truck_km_end_trip: any
+  discharge: any
+  img_proof_cte: FreightFile
+  img_proof_ticket: FreightFile
+  img_proof_freight_letter: FreightFile
   createdAt: string
   updatedAt: string
+  restock: Restock[],
+  travelExpense: Travel[],
+  depositMoney: Deposit[]
 }
 
 export type FinancialStatementResponse = {
@@ -94,7 +104,7 @@ export function useFinancialStatement() {
     queryKey: ['financialStatement'],
     queryFn: async () => {
       const response = await Api.get<FinancialStatementResponse>(
-        `/driver/financial/current`,
+        `/v1/driver/financial/current`,
       )
 
       if (response.status !== 200) {
@@ -139,5 +149,14 @@ const mapData = (
   total_value: financialStatement.total_value,
   createdAt: new Date(financialStatement.createdAt),
   updatedAt: new Date(financialStatement.updatedAt),
-  freight: financialStatement.freight.map(freightMapData),
+  freight: financialStatement.freight.map((freight) => {
+    const camelCasedFreight = toCamelCase(freight, [
+      'createdAt',
+      'updatedAt',
+      'restock',
+      'travelExpense',
+      'depositMoney'
+    ])
+    return freightMapData(camelCasedFreight)
+  }),
 })

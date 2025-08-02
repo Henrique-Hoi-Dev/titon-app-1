@@ -23,8 +23,7 @@ export default function App() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const response = await api.post('/driver/freight/starting-trip', {
-        freight_id: Number(id),
+      const response = await api.put(`/v1/driver/freight/starting-trip/${id}`, {
         truck_current_km: Number(km.replace(/\D/g, '')),
       })
 
@@ -39,10 +38,6 @@ export default function App() {
         queryKey: ['financialStatement'],
       })
       router.back()
-    },
-    onError: () => {
-      // Tratar erro
-      Alert.alert('Erro', 'Erro ao iniciar viagem')
     },
   })
 

@@ -3,6 +3,8 @@ import Api from '../services/api'
 import { toJsonBody } from '../utils/forms'
 import { useQuery } from '@tanstack/react-query'
 import { useMutation } from './useMutation'
+import { useFreight } from './useFreight'
+import { ErrorKey } from '../utils/errors'
 
 export declare type Deposit = {
   id: number
@@ -33,7 +35,7 @@ export type DepositsFetchResponse = {
 }
 
 export type DepositErrorResponse = {
-  msg: string
+  message: string
 }
 
 type StoreType = {
@@ -43,75 +45,49 @@ type StoreType = {
 
 export type UseDepositsOptions = {
   onSuccess?: (data: DepositsResponse) => void
-  onError?: () => void
+  onError?: (key: ErrorKey) => void
 }
 
 export function useDeposits(
-  financialStatementId: number,
+  freightId: number,
   options?: UseDepositsOptions,
 ) {
-  const query = useQuery({
-    queryKey: ['deposits', financialStatementId],
-    queryFn: async () => {
-      const response = await Api.get<DepositsFetchResponse>(
-        `/driver/deposits`,
-        {
-          financialStatementId,
-        },
-      )
-
-      if (response.status !== 200) {
-        throw Error('Erro ao buscar os depósitos')
-      }
-
-      return response.data.data.map(mapData)
-    },
-  })
+  const query = useFreight(freightId)
 
   const mutation = useMutation({
     mutationFn: async ({ freightId, deposit }: StoreType) => {
       const data = toJsonBody({
         ...deposit,
-        freightId,
-        financialStatementId,
+        freight_id: freightId,
+        // registration_date: new Date().toISOString(),
       })
 
       const response = await Api.post<{ data: DepositsResponse }>(
-        '/driver/deposit',
+        '/v1/driver/deposit',
         data,
       )
 
+      console.log('Response from deposit creation:', response.data)
+
       if (response.status !== 201) {
-        throw Error('Erro ao criar viagem')
+        throw Error('Erro ao criar depósito')
       }
 
       return response.data
     },
     onSuccess: (data) => {
       options?.onSuccess?.(data.data)
-      query.refetch()
+      query.fetch()
     },
     onError: options?.onError,
   })
 
   return {
-    loading: query.isFetching,
+    loading: query.loading,
     mutating: mutation.isPending,
-    data: query.data,
-    fetch: query.refetch,
+    data: query.data?.depositMoney || [],
+    fetch: query.fetch,
     store: mutation,
     error: query.error || mutation.error,
   }
 }
-
-const mapData = (deposit: DepositsResponse): Deposit => ({
-  id: deposit.id,
-  financial_statements_id: deposit.financial_statements_id,
-  freight_id: deposit.freight_id,
-  type_transaction: deposit.type_transaction,
-  local: deposit.local,
-  type_bank: deposit.type_bank,
-  value: deposit.value,
-  createdAt: new Date(deposit.createdAt),
-  updatedAt: new Date(deposit.updatedAt),
-})

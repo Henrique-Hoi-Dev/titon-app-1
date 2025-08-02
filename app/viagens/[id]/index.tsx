@@ -61,7 +61,7 @@ export default function App() {
       <Header>
         <Skeleton show={shouldShow} colorMode="light">
           <Text className="text-2xl text-white -top-1.5">
-            {item?.final_freight_city || ''} / {item?.start_freight_city}
+            {item?.end_freight_city || ''} / {item?.start_freight_city}
           </Text>
         </Skeleton>
       </Header>
@@ -100,9 +100,13 @@ export default function App() {
         {activeTab === 'informacoes' && (
           <Informacoes loading={!shouldShow} item={item as Freight} />
         )}
-        {activeTab === 'depositos' && <Depositos id={item?.id} />}
-        {activeTab === 'despesas' && <Despesas id={item?.id} />}
-        {activeTab === 'abastecimentos' && <Abastecimentos id={item?.id} />}
+        {item && (
+          <>
+            {activeTab === 'depositos' && <Depositos id={item.id} />}
+            {activeTab === 'despesas' && <Despesas id={item.id} />}
+            {activeTab === 'abastecimentos' && <Abastecimentos id={item.id} />}
+          </>
+        )}
       </View>
     </Layout>
   )

@@ -148,19 +148,17 @@ export default function App() {
         values.status = 'PENDING'
       }
 
-      values.start_freight_city = `${
-        values.start_freight_city
-      } ${values.start_freight_state?.toLocaleUpperCase()}`
+      values.start_freight_city = `${values.start_freight_city
+        } ${values.start_freight_state?.toLocaleUpperCase()}`
 
-      values.final_freight_city = `${
-        values.final_freight_city
-      } ${values.final_freight_state?.toLocaleUpperCase()}`
+      values.final_freight_city = `${values.final_freight_city
+        } ${values.final_freight_state?.toLocaleUpperCase()}`
 
       const response = await apiMethod<{
         data: Freight
         errors?: Record<keyof Freight, string>
       }>(
-        `/driver/freight${currentFreightId ? `/${currentFreightId}` : ''}`,
+        `/v1/driver/freight${currentFreightId ? `/${currentFreightId}` : ''}`,
         values,
       )
 
@@ -188,7 +186,7 @@ export default function App() {
           api
             .get<{
               data: Freight
-            }>(`/driver/freight/${data.id}`)
+            }>(`/v1/driver/freight/${data.id}`)
             .then((response) => {
               handleChange('distance')(response.data.data.distance)
               handleChange('duration')(response.data.data.duration)
@@ -265,12 +263,12 @@ export default function App() {
                         100 +
                         (values.start_freight_state
                           ? 60 +
-                            (getError(errors, 'start_freight_state').length
-                              ? 16
-                              : 0) +
-                            (getError(errors, 'start_freight_city').length
-                              ? 16
-                              : 0)
+                          (getError(errors, 'start_freight_state').length
+                            ? 16
+                            : 0) +
+                          (getError(errors, 'start_freight_city').length
+                            ? 16
+                            : 0)
                           : 0),
                     }}
                     className="absolute w-[2px] bg-primary-600 left-[7px]"
@@ -281,12 +279,12 @@ export default function App() {
                         90 +
                         (values.start_freight_state
                           ? 60 +
-                            (getError(errors, 'start_freight_state').length
-                              ? 16
-                              : 0) +
-                            (getError(errors, 'start_freight_city').length
-                              ? 16
-                              : 0)
+                          (getError(errors, 'start_freight_state').length
+                            ? 16
+                            : 0) +
+                          (getError(errors, 'start_freight_city').length
+                            ? 16
+                            : 0)
                           : 0),
                     }}
                     className="absolute w-4 h-4 rounded-full bg-primary-600"

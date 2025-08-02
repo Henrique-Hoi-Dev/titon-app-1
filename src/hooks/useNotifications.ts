@@ -25,7 +25,7 @@ export default function useNotifications() {
     queryFn: async ({ pageParam = 1 }) => {
       console.log('pageParam', pageParam)
       const response = await api.get<NotificationsResponse>(
-        '/driver/notifications',
+        '/v1/driver/notifications',
         {
           page: pageParam as number,
         },
@@ -60,9 +60,9 @@ export default function useNotifications() {
       let response: Response<unknown>
 
       if (!id) {
-        response = await api.post('/driver/notifications/allread')
+        response = await api.post('/v1/driver/notifications/allread')
       } else {
-        response = await api.put(`/driver/notifications/${id}`)
+        response = await api.put(`/v1/driver/notifications/${id}`)
       }
 
       if (response.status !== 200) {

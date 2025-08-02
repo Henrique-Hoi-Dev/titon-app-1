@@ -22,6 +22,7 @@ import UploadInput, {
 } from '~/src/components/Form/Inputs/UploadInput'
 import { ImagePickerAsset } from 'expo-image-picker'
 import Toast from 'react-native-toast-message'
+import { ErrorKey, getErrorMessage } from '~/src/utils/errors'
 
 const validationSchema = Yup.object().shape({
   type_establishment: Yup.string().required('Campo obrigatório'),
@@ -40,7 +41,7 @@ export default function App() {
   }
   const [step, setStep] = useState<keyof typeof stepsLabels>(1)
   const totalSteps = Object.keys(stepsLabels).length
-  const [feedbackType, setFeedbackType] = useState<'success' | 'error'>(
+  const [feedbackType, setFeedbackType] = useState<'success' | 'error' | ErrorKey>(
     'success',
   )
   const [showFeedback, setShowFeedback] = useState(false)
@@ -54,7 +55,7 @@ export default function App() {
   const [image, setImage] = useState<ImagePickerAsset>()
   const [picking, setPicking] = useState(false)
   const uploadInvoice = useUpload({
-    apiUrl: `/driver/travel/upload-documents`,
+    apiUrl: `/v1/driver/travel/upload-documents`,
     onError: () => {
       Toast.show({
         type: 'error',
@@ -74,8 +75,8 @@ export default function App() {
       setStep(1)
       setShowFeedback(true)
     },
-    onError: () => {
-      setFeedbackType('error')
+    onError: (error) => {
+      setFeedbackType(error || 'error')
       setShowFeedback(true)
     },
   })
@@ -279,25 +280,26 @@ export default function App() {
       </ScrollView>
       {showFeedback && (
         <Feedback.Root
-          type={feedbackType}
+          type={feedbackType === 'success' ? 'success' : 'error'}
           onBackButtonPress={() => {
             setShowFeedback(false)
             router.back()
           }}
         >
           <Feedback.Heading className="px-6 py-6">
-            {feedbackType === 'error'
-              ? 'Desculpe, parece que ocorreu um erro.'
-              : 'Sua despesa foi adicionada com sucesso'}
+            {feedbackType === 'success'
+              ? 'Sua despesa foi adicionada com sucesso.'
+              : 'Desculpe, parece que ocorreu um erro.'}
           </Feedback.Heading>
           <View className="items-center justify-between flex-1 pt-2 text-center">
             <Text className="">
-              {feedbackType === 'error'
-                ? 'Por favor confira os dados inseridos ou tente novamente mais tarde'
-                : 'Para conferir sua despesa, clique no botão abaixo'}
+              {feedbackType === 'success'
+                ? 'Para conferir sua despesa, clique no botão abaixo'
+                : feedbackType !== 'error' ? getErrorMessage(feedbackType) :
+                  'Por favor, tente novamente mais tarde.'}
             </Text>
             <View className="w-full">
-              {feedbackType === 'error' && (
+              {feedbackType !== 'success' && (
                 <Button
                   onPress={() => {
                     setShowFeedback(false)

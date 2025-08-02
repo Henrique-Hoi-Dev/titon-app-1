@@ -54,9 +54,12 @@ export function AuthProvider(props: PropsWithChildren) {
   const router = useRouter()
 
   const handeProfile = useCallback(async () => {
+    console.log('Fetching profile...')
     setLoading(true)
     try {
-      const response = await Api.get<ProfileResponse>('/driver/profile')
+      const response = await Api.get<ProfileResponse>('/v1/driver/profile')
+
+      console.log(response)
 
       if (response.status !== 200) {
         throw new Error('Invalid credentials')
@@ -73,9 +76,10 @@ export function AuthProvider(props: PropsWithChildren) {
   }, [])
 
   const handleSignIn = useCallback(async (email: string, password: string) => {
+    console.log('Signing in...')
     setLoading(true)
     try {
-      const response = await Api.post<AuthResponse>('/driver/signin', {
+      const response = await Api.post<AuthResponse>('/v1/driver/signin', {
         cpf: email,
         password,
       })
@@ -125,7 +129,7 @@ export function AuthProvider(props: PropsWithChildren) {
     }
 
     bootstrapAsync()
-  }, [handeProfile, token])
+  }, [token])
 
   useEffect(() => {
     if (user) {
@@ -137,7 +141,7 @@ export function AuthProvider(props: PropsWithChildren) {
 
     const listener = (event: UserChangedState) => {
       if (event.current.onesignalId) {
-        Api.post('/driver/activate/receive-notifications', {
+        Api.post('/v1/driver/activate/push-receive-notifications', {
           player_id: event.current.onesignalId,
         })
       }

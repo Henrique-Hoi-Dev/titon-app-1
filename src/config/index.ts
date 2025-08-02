@@ -28,7 +28,7 @@ export default envSchema.parse({
   EXPO_PUBLIC_APP_TITLE: "Logbook",
   EXPO_PUBLIC_APP_ENV: "production",
   EXPO_PUBLIC_APP_API_ENV: "production",
-  EXPO_PUBLIC_APP_URL: "https://api-driver-titon.herokuapp.com",
-  EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID: null,
-  EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID: null,
+  EXPO_PUBLIC_APP_URL: "https://api-titon-1bfe49a9ae5d.herokuapp.com",
+  EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID: 'ae586d2b-2fa1-42ca-8996-dc9ee016197d',
+  EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID: '922828c4-6b80-4aae-b5fd-593c80efc423',
 })

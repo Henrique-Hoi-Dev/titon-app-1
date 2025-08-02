@@ -3,6 +3,8 @@ import Api from '../services/api'
 import { toJsonBody } from '../utils/forms'
 import { useQuery } from '@tanstack/react-query'
 import { useMutation } from './useMutation'
+import { useFreight } from './useFreight'
+import { ErrorKey } from '../utils/errors'
 
 export declare type Travel = {
   id: number
@@ -33,7 +35,7 @@ export type TravelsFetchResponse = {
 }
 
 export type TravelErrorResponse = {
-  msg: string
+  key: string
 }
 
 type StoreType = {
@@ -43,24 +45,11 @@ type StoreType = {
 
 export type UseTravelsOptions = {
   onSuccess?: (data: TravelsResponse) => void
-  onError?: () => void
+  onError?: (key: ErrorKey) => void
 }
 
 export function useTravels(freightId: number, options?: UseTravelsOptions) {
-  const query = useQuery({
-    queryKey: ['travels', freightId],
-    queryFn: async () => {
-      const response = await Api.get<TravelsFetchResponse>(`/driver/travels`, {
-        freight_id: freightId,
-      })
-
-      if (response.status !== 200) {
-        throw Error('Erro ao buscar os viagens')
-      }
-
-      return response.data.data.map(mapData)
-    },
-  })
+  const query = useFreight(freightId)
 
   const mutation = useMutation({
     mutationFn: async ({ freightId, travel }: StoreType) => {
@@ -70,28 +59,28 @@ export function useTravels(freightId: number, options?: UseTravelsOptions) {
       })
 
       const response = await Api.post<{ data: TravelsResponse }>(
-        '/driver/travel',
+        '/v1/driver/travel',
         data,
       )
 
       if (response.status !== 201) {
-        throw Error('Erro ao criar viagem')
+        throw new Error(response.data.key || 'Erro ao salvar despesa')
       }
 
       return response.data
     },
     onSuccess: (data) => {
       options?.onSuccess?.(data.data)
-      query.refetch()
+      query.fetch()
     },
     onError: options?.onError,
   })
 
   return {
-    loading: query.isFetching,
+    loading: query.loading,
     mutating: mutation.isPending,
-    data: query.data,
-    fetch: query.refetch,
+    data: query.data?.travelExpense || [],
+    fetch: query.fetch,
     store: mutation,
     error: query.error || mutation.error,
   }

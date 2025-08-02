@@ -1,9 +1,12 @@
 /* eslint-disable prefer-promise-reject-errors */
 /* eslint-disable no-undef */
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Response } from './types'
 import Config from '~/src/config'
 import { enpointsWithoutAuth, getToken } from './api'
 import { ImagePickerAsset } from 'expo-image-picker'
+import Toast from 'react-native-toast-message'
+import { router } from 'expo-router'
 
 const upload = async <T = unknown>(
   url: string,
@@ -58,6 +61,19 @@ const upload = async <T = unknown>(
     })
 
     let data: T = {} as T
+
+    if (response.status === 401 && !shouldntHaveAuth) {
+      await AsyncStorage.removeItem(`${Config.appName}_token`)
+      Toast.show({
+        type: 'error',
+        text1: 'Sessão expirada',
+        text2: 'Sua sessão expirou, por favor faça login novamente.',
+      })
+
+      console.log('Redirecting to login...', fullUrl)
+
+      return router.replace('/(auth)/sign-in') as unknown as Response<T>
+    }
 
     try {
       data = (await response.json()) as T

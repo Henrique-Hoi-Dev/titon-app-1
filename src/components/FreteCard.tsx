@@ -37,7 +37,7 @@ export default function FreteCard({ item, index }: FreteCardProps) {
           <View className="flex-row items-center justify-between">
             <View>
               <Text className="text-gray-950 mb-5">
-                {item.final_freight_city}
+                {item.end_freight_city}
               </Text>
               <Text className="text-gray-950 mb-5">
                 {item.start_freight_city}
@@ -68,7 +68,7 @@ export default function FreteCard({ item, index }: FreteCardProps) {
               Tempo estimado:
             </Text>
             <Text className="text-sm font-light text-primary-700 ">
-              {item.duration}
+              {item.route_duration}
             </Text>
           </View>
           <View className="flex-row items-center justify-between">
@@ -76,7 +76,7 @@ export default function FreteCard({ item, index }: FreteCardProps) {
               Distância:
             </Text>
             <Text className="text-sm font-light text-primary-700 ">
-              {item.distance}
+              {item.route_distance_km}
             </Text>
           </View>
           {item.status === 'STARTING_TRIP' && (

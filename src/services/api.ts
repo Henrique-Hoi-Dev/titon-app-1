@@ -3,8 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import complexQueryBuilder, { PrimitivesArray } from 'complex-query-builder'
 import Config from '../config'
 import { Response, Methods, Data } from './types'
+import { router } from 'expo-router'
+import Toast from 'react-native-toast-message'
+import { getErrorMessage } from '../utils/errors'
 
-export const enpointsWithoutAuth = ['/driver/signin']
+export const enpointsWithoutAuth = ['/v1/driver/signin']
 
 export const getToken = async () => {
   const token = await AsyncStorage.getItem(`@${Config.appName}_token`)
@@ -80,12 +83,39 @@ export const Api = async <T = unknown>(
     const response = await fetch(fullUrl, config)
 
     console.log(
-      `${new Date().getTime()} [${method.toUpperCase()}] ${fullUrl} - ${
-        response.status
+      `${new Date().getTime()} [${method.toUpperCase()}] ${fullUrl} - ${response.status
       }`,
     )
 
+    if (response.status === 401 && !shouldntHaveAuth) {
+      await AsyncStorage.removeItem(`${Config.appName}_token`)
+      // Toast.show({
+      //   type: 'error',
+      //   text1: 'Sessão expirada',
+      //   text2: 'Sua sessão expirou, por favor faça login novamente.',
+      // })
+
+      console.log('Redirecting to login...', fullUrl)
+
+      return router.replace('/(auth)/sign-in') as unknown as Response<T>
+    }
+
     const jsonParsedResponse = (await response.json()) as T
+
+    if(!response.ok) {
+      if(jsonParsedResponse?.key) {
+        Toast.show({
+          type: 'error',
+          text1: 'Erro',
+          text2: getErrorMessage(jsonParsedResponse.key),
+          props: {
+            text2NumberOfLines: 10,
+          },
+          visibilityTime: 5000,
+        })
+      }
+    }
+
     const ret: Response<T> = {
       data: jsonParsedResponse,
       url: response.url,

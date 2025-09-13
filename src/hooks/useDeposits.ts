@@ -3,7 +3,6 @@ import Api from '../services/api'
 import { toJsonBody } from '../utils/forms'
 import { useQuery } from '@tanstack/react-query'
 import { useMutation } from './useMutation'
-import { useFreight } from './useFreight'
 import { ErrorKey } from '../utils/errors'
 
 export declare type Deposit = {
@@ -14,24 +13,28 @@ export declare type Deposit = {
   local: string
   type_bank: string
   value: number
+  registration_date: Date
   createdAt: Date
   updatedAt: Date
 }
 
 export type DepositsResponse = {
   id: number
-  financial_statements_id: number
-  freight_id: number
-  type_transaction: string
+  financialStatementsId: number
+  freightId: number
+  registrationDate: string
+  typeTransaction: string
   local: string
-  type_bank: string
+  typeBank: string
   value: number
   createdAt: string
   updatedAt: string
 }
 
 export type DepositsFetchResponse = {
-  data: DepositsResponse[]
+  data: {
+    docs: DepositsResponse[]
+  }
 }
 
 export type DepositErrorResponse = {
@@ -52,7 +55,32 @@ export function useDeposits(
   freightId: number,
   options?: UseDepositsOptions,
 ) {
-  const query = useFreight(freightId)
+  const query = useQuery({
+    queryKey: ['deposits', freightId],
+    queryFn: async () => {
+      const response = await Api.get<DepositsFetchResponse>(
+        `/v1/driver/deposits`, {
+          freight_id: freightId
+        }
+      )
+
+      if (response.status !== 200) {
+        throw Error('Erro ao buscar os depósitos')
+      }
+
+      return response.data.data.docs.map((item) => ({
+        ...item,
+        financial_statements_id: item.financialStatementsId,
+        freight_id: item.freightId,
+        registration_date: new Date(item.registrationDate),
+        type_transaction: item.typeTransaction,
+        type_bank: item.typeBank,
+        createdAt: new Date(item.createdAt),
+        updatedAt: new Date(item.updatedAt),
+      }))
+    },
+    enabled: freightId !== 0,
+  })
 
   const mutation = useMutation({
     mutationFn: async ({ freightId, deposit }: StoreType) => {
@@ -67,8 +95,6 @@ export function useDeposits(
         data,
       )
 
-      console.log('Response from deposit creation:', response.data)
-
       if (response.status !== 201) {
         throw Error('Erro ao criar depósito')
       }
@@ -77,16 +103,16 @@ export function useDeposits(
     },
     onSuccess: (data) => {
       options?.onSuccess?.(data.data)
-      query.fetch()
+      query.refetch()
     },
     onError: options?.onError,
   })
 
   return {
-    loading: query.loading,
+    loading: query.isLoading,
     mutating: mutation.isPending,
-    data: query.data?.depositMoney || [],
-    fetch: query.fetch,
+    data: query.data || [],
+    fetch: query.refetch,
     store: mutation,
     error: query.error || mutation.error,
   }

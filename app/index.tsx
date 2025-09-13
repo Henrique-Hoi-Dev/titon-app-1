@@ -11,7 +11,7 @@ export default function Splashscreen() {
 
   const onLayoutRootView = useCallback(async () => {
     if (token && !user) {
-      await getUser()
+      await getUser(token)
     }
 
     if (user || (!user && !token)) {

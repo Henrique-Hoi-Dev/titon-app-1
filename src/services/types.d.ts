@@ -17,9 +17,11 @@ export declare type Methods =
   | 'PUT'
   | 'DELETE'
 
+export declare type DataField = Primitives | Date
+
 export declare interface Data {
   _method?: Methods | null
-  [key?: string]: Primitives | Date
+  [key?: string]: DataField | Array<DataField> | Record<string, unknown>
 }
 
 export declare interface UploadData extends Omit<Data, '_method'> {

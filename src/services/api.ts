@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message'
 import { getErrorMessage } from '../utils/errors'
 
 export const enpointsWithoutAuth = ['/v1/driver/signin']
+export const enpointsThatCannotRedirectWhenResponseStatusIs401 = ['/v1/driver/profile']
 
 export const getToken = async () => {
   const token = await AsyncStorage.getItem(`@${Config.appName}_token`)
@@ -21,6 +22,7 @@ export const Api = async <T = unknown>(
 ): Promise<Response<T>> => {
   try {
     const shouldntHaveAuth = enpointsWithoutAuth.includes(url)
+    const shouldRedirectWhenReach401 = !enpointsThatCannotRedirectWhenResponseStatusIs401.includes(url)
     const token = await getToken()
     const headers = new Headers()
 
@@ -31,6 +33,13 @@ export const Api = async <T = unknown>(
     headers.append('Accept', 'application/json')
     if (token && !shouldntHaveAuth) {
       headers.append('Authorization', `Bearer ${token}`)
+    }
+
+    if (data.headers && typeof data.headers === 'object') {
+      Object.entries(data.headers).forEach(([key, value]) => {
+        headers.append(key, value)
+      })
+      delete data.headers
     }
 
     const config: RequestInit = {
@@ -82,11 +91,6 @@ export const Api = async <T = unknown>(
 
     const response = await fetch(fullUrl, config)
 
-    console.log(
-      `${new Date().getTime()} [${method.toUpperCase()}] ${fullUrl} - ${response.status
-      }`,
-    )
-
     if (response.status === 401 && !shouldntHaveAuth) {
       await AsyncStorage.removeItem(`${Config.appName}_token`)
       // Toast.show({
@@ -95,15 +99,20 @@ export const Api = async <T = unknown>(
       //   text2: 'Sua sessão expirou, por favor faça login novamente.',
       // })
 
-      console.log('Redirecting to login...', fullUrl)
-
-      return router.replace('/(auth)/sign-in') as unknown as Response<T>
+      if (shouldRedirectWhenReach401) {
+        return router.replace('/(auth)/sign-in') as unknown as Response<T>
+      }
     }
 
     const jsonParsedResponse = (await response.json()) as T
 
-    if(!response.ok) {
-      if(jsonParsedResponse?.key) {
+    console.log(
+      `${new Date().getTime()} [${method.toUpperCase()}] ${fullUrl} - ${response.status
+      } - ${JSON.stringify(data)} - ${JSON.stringify(jsonParsedResponse)}`,
+    )
+
+    if (!response.ok) {
+      if (jsonParsedResponse?.key) {
         Toast.show({
           type: 'error',
           text1: 'Erro',

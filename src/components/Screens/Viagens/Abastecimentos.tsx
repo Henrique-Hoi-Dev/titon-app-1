@@ -105,7 +105,7 @@ export default function Abastecimentos({ id }: { id: number }) {
                 -
                 {
                   formatWithMask({
-                    text: item.total_value_fuel.toString(),
+                    text: item.total_value_fuel?.toString() ?? '000',
                     mask: Masks.BRL_CURRENCY,
                   }).masked
                 }

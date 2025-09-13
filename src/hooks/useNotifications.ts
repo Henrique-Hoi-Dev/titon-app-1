@@ -23,7 +23,6 @@ export default function useNotifications() {
     queryKey: ['notifications'],
     initialPageParam: 1,
     queryFn: async ({ pageParam = 1 }) => {
-      console.log('pageParam', pageParam)
       const response = await api.get<NotificationsResponse>(
         '/v1/driver/notifications',
         {

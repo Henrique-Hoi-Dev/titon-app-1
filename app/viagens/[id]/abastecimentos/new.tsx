@@ -110,10 +110,7 @@ export default function App() {
 
       await store.mutateAsync({
         freightId: activeFreight.id,
-        restock: {
-          ...data,
-          financial_statements_id: activeFreight.financial_statements_id,
-        },
+        restock: data,
       })
     },
   })

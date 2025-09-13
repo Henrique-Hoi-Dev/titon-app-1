@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "@rocketseat/eslint-config/react"
+  ],
+  "rules": {
+    "jsx-a11y/alt-text": "off",
+    //unused vars ignore vars that start with _
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error", 
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ]
+  }
+}

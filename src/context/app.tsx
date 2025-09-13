@@ -4,7 +4,7 @@ import config from '~/src/config'
 import { useAuth, useProtectedRoute } from './auth'
 
 export default function AppProvider({ children }: PropsWithChildren) {
-  const { token, getUser, user, setToken } = useAuth()
+  const { token, getUser, setToken } = useAuth()
   useProtectedRoute()
 
   const getToken = useCallback(async () => {
@@ -19,21 +19,12 @@ export default function AppProvider({ children }: PropsWithChildren) {
         (asyncStorageToken && asyncStorageToken !== token)
       ) {
         setToken(asyncStorageToken)
+        getUser(asyncStorageToken)
       }
     }
 
     load()
   }, [getToken, setToken, token])
-
-  useEffect(() => {
-    async function bootstrapAsync() {
-      if (!user) {
-        getUser()
-      }
-    }
-
-    bootstrapAsync()
-  }, [getUser, user, token])
 
   return children
 }

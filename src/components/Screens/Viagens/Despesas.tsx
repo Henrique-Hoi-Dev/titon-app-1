@@ -60,7 +60,7 @@ export default function Despesas({ id }: { id: number }) {
               {
                 formatWithMask({
                   text: data
-                    ?.reduce((acc, cur) => acc + cur.value, 0)
+                    ?.reduce((acc, cur) => acc + (cur.value ?? 0), 0)
                     .toString(),
                   mask: Masks.BRL_CURRENCY,
                 }).masked
@@ -105,7 +105,7 @@ export default function Despesas({ id }: { id: number }) {
                 -
                 {
                   formatWithMask({
-                    text: item.value.toString(),
+                    text: item.value?.toString() ?? '000',
                     mask: Masks.BRL_CURRENCY,
                   }).masked
                 }

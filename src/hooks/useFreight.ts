@@ -7,9 +7,6 @@ import {
 } from './useFinancialStatement'
 import Api from '../services/api'
 import { CamelCase } from '../@types/utils'
-import { Restock } from './useRestocks'
-import { Travel } from './useTravels'
-import { Deposit } from './useDeposits'
 
 export declare type Freight = {
   id: number
@@ -36,9 +33,6 @@ export declare type Freight = {
   img_proof_freight_letter: FreightFile
   createdAt: Date
   updatedAt: Date
-  restock: Restock[],
-  travelExpense: Travel[],
-  depositMoney: Deposit[]
 }
 
 export function useFreights() {
@@ -120,6 +114,7 @@ export function useFreight(freightId: number) {
 
       return mapData(response.data.data)
     },
+    enabled: freightId !== 0,
   })
 
   return {
@@ -155,7 +150,4 @@ export const mapData = (freight: CamelCase<FreightResponse, 'createdAt' | 'updat
   updatedAt: new Date(freight.updatedAt),
   route_distance_km: freight.routeDistanceKm,
   route_duration: freight.routeDuration,
-  restock: freight.restock || [],
-  travelExpense: freight.travelExpense || [],
-  depositMoney: freight.depositMoney || [],
 })

@@ -70,8 +70,6 @@ const upload = async <T = unknown>(
         text2: 'Sua sessão expirou, por favor faça login novamente.',
       })
 
-      console.log('Redirecting to login...', fullUrl)
-
       return router.replace('/(auth)/sign-in') as unknown as Response<T>
     }
 

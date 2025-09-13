@@ -75,42 +75,44 @@ export default function Depositos({ id }: { id: number }) {
         refreshing={loading}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 48 }}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Card className="mb-4">
-            <View className="flex-row gap-x-4 items-center ">
-              <MaterialCommunityIcons
-                name="arrow-down-circle-outline"
-                size={20}
-                color="#ef4444"
-              />
-              <View className="flex-1 gap-y-1">
-                <View className="rounded-lg bg-red-200 w-[74px] py-1 px-2">
-                  <Text className="text-xs text-red-600">Depósitos</Text>
-                </View>
-                {/* <Text className="text-xs text-gray-950/50">
+        renderItem={({ item }) => {
+          return (
+            <Card className="mb-4">
+              <View className="flex-row gap-x-4 items-center ">
+                <MaterialCommunityIcons
+                  name="arrow-down-circle-outline"
+                  size={20}
+                  color="#ef4444"
+                />
+                <View className="flex-1 gap-y-1">
+                  <View className="rounded-lg bg-red-200 w-[74px] py-1 px-2">
+                    <Text className="text-xs text-red-600">Depósitos</Text>
+                  </View>
+                  {/* <Text className="text-xs text-gray-950/50">
                 {
                   banks.filter(
                     (bank) => Object.keys(bank)[0] === item.type_bank,
                   )[0][item.type_bank]
                 }
               </Text> */}
-                <Text className="text-sm text-gray-800">{item.local}</Text>
-                <Text className="text-sm text-gray-800/50">
-                  {item.createdAt.toLocaleDateString()}
+                  <Text className="text-sm text-gray-800">{item.local}</Text>
+                  <Text className="text-sm text-gray-800/50">
+                    {item.createdAt.toLocaleDateString()}
+                  </Text>
+                </View>
+                <Text className="text-sm text-red-500">
+                  -
+                  {
+                    formatWithMask({
+                      text: item.value?.toString() ?? '000',
+                      mask: Masks.BRL_CURRENCY,
+                    }).masked
+                  }
                 </Text>
               </View>
-              <Text className="text-sm text-red-500">
-                -
-                {
-                  formatWithMask({
-                    text: item.value.toString(),
-                    mask: Masks.BRL_CURRENCY,
-                  }).masked
-                }
-              </Text>
-            </View>
-          </Card>
-        )}
+            </Card>
+          )
+        }}
         renderSectionHeader={({ section: { title } }) => (
           <View className="w-full bg-zinc-100 px-2 py-4">
             <Text className="text-base text-gray-950 ">{title}</Text>

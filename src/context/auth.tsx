@@ -39,7 +39,7 @@ export type AuthContextType = {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
-  getUser: () => Promise<void>
+  getUser: (token: string) => Promise<void>
   user?: User
   token?: string
   setToken: (token: string) => void
@@ -53,13 +53,20 @@ export function AuthProvider(props: PropsWithChildren) {
   const [loading, setLoading] = useState<boolean>(false)
   const router = useRouter()
 
-  const handeProfile = useCallback(async () => {
-    console.log('Fetching profile...')
+  const handleProfile = useCallback(async (token?: string | null) => {
     setLoading(true)
     try {
-      const response = await Api.get<ProfileResponse>('/v1/driver/profile')
+      const response = await Api.get<ProfileResponse>('/v1/driver/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
 
-      console.log(response)
+      if (response.status === 401) {
+        throw new Error('Unauthorized', {
+          cause: { status: 401 },
+        })
+      }
 
       if (response.status !== 200) {
         throw new Error('Invalid credentials')
@@ -69,22 +76,21 @@ export function AuthProvider(props: PropsWithChildren) {
         setUser(response.data.data)
       }
     } catch (error) {
-      //
+      if (error instanceof Error && error.cause?.status === 401) {
+        handleSignOut()
+      }
     } finally {
       setLoading(false)
     }
   }, [])
 
   const handleSignIn = useCallback(async (email: string, password: string) => {
-    console.log('Signing in...')
     setLoading(true)
     try {
       const response = await Api.post<AuthResponse>('/v1/driver/signin', {
         cpf: email,
         password,
       })
-
-      console.log(response)
 
       if (response.status !== 200) {
         throw new Error('Invalid credentials')
@@ -96,6 +102,7 @@ export function AuthProvider(props: PropsWithChildren) {
         } = response.data as unknown as AuthResponse
 
         setToken(token)
+        handleProfile(token)
       }
     } catch (error) {
       setLoading(false)
@@ -106,7 +113,7 @@ export function AuthProvider(props: PropsWithChildren) {
     await AsyncStorage.removeItem(`@${config.appName}_token`)
     setToken(undefined)
     setUser(undefined)
-    router.replace('/sign-in')
+    // router.replace('/sign-in')
   }, [router])
 
   useEffect(() => {
@@ -125,7 +132,9 @@ export function AuthProvider(props: PropsWithChildren) {
       ) {
         await AsyncStorage.setItem(`@${config.appName}_token`, token)
       }
-      handeProfile()
+      if (asyncStorageToken) {
+        handleProfile(asyncStorageToken)
+      }
     }
 
     bootstrapAsync()
@@ -141,7 +150,7 @@ export function AuthProvider(props: PropsWithChildren) {
 
     const listener = (event: UserChangedState) => {
       if (event.current.onesignalId) {
-        Api.post('/v1/driver/activate/push-receive-notifications', {
+        Api.patch('/v1/driver/activate/push-receive-notifications', {
           player_id: event.current.onesignalId,
         })
       }
@@ -160,7 +169,7 @@ export function AuthProvider(props: PropsWithChildren) {
         loading,
         signIn: handleSignIn,
         signOut: handleSignOut,
-        getUser: handeProfile,
+        getUser: handleProfile,
         user,
         token,
         setToken,

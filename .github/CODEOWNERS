@@ -2,26 +2,26 @@
 # Cada linha é um padrão de arquivo seguido de um ou mais usuários
 
 # Aprovação geral do projeto
-* @Henrique-Hoinacki-work @Henrique-Hoi-Dev
+* @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
 
 # Configurações específicas do GitHub
-.github/ @Henrique-Hoinacki-work @Henrique-Hoi-Dev
+.github/ @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
 
 # Workflows e CI/CD
-.github/workflows/ @Henrique-Hoinacki-work @Henrique-Hoi-Dev
+.github/workflows/ @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
 
 # Configurações do projeto
-package.json @Henrique-Hoinacki-work @Henrique-Hoi-Dev
-yarn.lock @Henrique-Hoinacki-work @Henrique-Hoi-Dev
-app.json @Henrique-Hoinacki-work @Henrique-Hoi-Dev
+package.json @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
+yarn.lock @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
+app.json @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
 
 # Código fonte principal
-src/ @Henrique-Hoinacki-work @Henrique-Hoi-Dev
+src/ @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
 
 # Configurações de build
-metro.config.js @Henrique-Hoinacki-work @Henrique-Hoi-Dev
-babel.config.js @Henrique-Hoinacki-work @Henrique-Hoi-Dev
+metro.config.js @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
+babel.config.js @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
 
 # Documentação
-README.md @Henrique-Hoinacki-work @Henrique-Hoi-Dev
-docs/ @Henrique-Hoinacki-work @Henrique-Hoi-Dev
+README.md @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari
+docs/ @Henrique-Hoinacki-work @Henrique-Hoi-Dev @julio-cavallari

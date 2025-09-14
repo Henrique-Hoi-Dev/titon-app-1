@@ -1,0 +1,36 @@
+{
+  "cli": {
+    "version": ">= 10.2.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "yarn": "1.22.18",
+      "credentialsSource": "remote",
+      "node": "22.14.0",
+      "environment": "production"
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "extends": "production",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

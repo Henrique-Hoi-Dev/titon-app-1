@@ -25,12 +25,12 @@ export default function Informacoes({ item, loading = false }: Props) {
   const { data: abastecimentos } = useRestocks(item?.id ?? 0)
   const totalAbastecimentos = abastecimentos?.reduce(
     (acc, curr) => acc + curr.total_value_fuel / 100,
-    0,
+    0
   )
   const { data: despesas } = useTravels(item?.id ?? 0)
   const totalDespesas = despesas?.reduce(
     (acc, curr) => acc + curr.value / 100,
-    0,
+    0
   )
 
   return (
@@ -54,7 +54,7 @@ export default function Informacoes({ item, loading = false }: Props) {
                     {
                       style: 'currency',
                       currency: 'BRL',
-                    },
+                    }
                   )}
                 </Text>
               </Skeleton>
@@ -87,7 +87,7 @@ export default function Informacoes({ item, loading = false }: Props) {
                 <Text className="text-2xl text-emerald-500">
                   {getComissao(
                     (item as Freight) ?? 0,
-                    user as User,
+                    user as User
                   ).toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',

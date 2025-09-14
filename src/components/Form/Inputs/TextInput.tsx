@@ -36,7 +36,7 @@ const TextInput = forwardRef(
       required,
       ...props
     }: InputProps,
-    ref: Ref<RNTextInput>,
+    ref: Ref<RNTextInput>
   ) => {
     const [isFocusedInternal, setIsFocusedInternal] = useState(isFocused)
     const { colorScheme } = useColorScheme()
@@ -49,7 +49,7 @@ const TextInput = forwardRef(
               `${
                 error ? 'text-red-500' : 'text-primary-600'
               } mb-2 text-xs font-semibold`,
-              labelClassName,
+              labelClassName
             )}
           >
             {label} {required && <Text className="text-red-500">*</Text>}
@@ -67,9 +67,9 @@ const TextInput = forwardRef(
                 isFocusedInternal && !error
                   ? 'border-primary-500'
                   : error
-                  ? 'border-red-500'
-                  : 'border-gray-500'
-              } h-12 pr-12 pl-4 w-full bg-gray-200 `,
+                    ? 'border-red-500'
+                    : 'border-gray-500'
+              } h-12 pr-12 pl-4 w-full bg-gray-200 `
             )}
             onFocus={(event: NativeSyntheticEvent<TextInputFocusEventData>) => {
               setIsFocusedInternal(true)
@@ -100,7 +100,7 @@ const TextInput = forwardRef(
         </View>
       </View>
     )
-  },
+  }
 )
 
 TextInput.displayName = 'TextInput'

@@ -41,9 +41,9 @@ export default function App() {
   }
   const [step, setStep] = useState<keyof typeof stepsLabels>(1)
   const totalSteps = Object.keys(stepsLabels).length
-  const [feedbackType, setFeedbackType] = useState<'success' | 'error' | ErrorKey>(
-    'success',
-  )
+  const [feedbackType, setFeedbackType] = useState<
+    'success' | 'error' | ErrorKey
+  >('success')
   const [showFeedback, setShowFeedback] = useState(false)
   const insets = useSafeAreaInsets()
   const { id } = useLocalSearchParams<{
@@ -169,7 +169,7 @@ export default function App() {
                 data={toSelectData(establishmentTypes)}
                 onSelect={(item) =>
                   handleChange('type_establishment')(
-                    item ? String(item.value) : '',
+                    item ? String(item.value) : ''
                   )
                 }
                 value={values.type_establishment}
@@ -202,7 +202,7 @@ export default function App() {
                 data={toSelectData(transactionTypes)}
                 onSelect={(item) =>
                   handleChange('type_transaction')(
-                    item ? String(item.value) : '',
+                    item ? String(item.value) : ''
                   )
                 }
                 value={values.type_transaction}
@@ -292,8 +292,9 @@ export default function App() {
             <Text className="">
               {feedbackType === 'success'
                 ? 'Para conferir sua despesa, clique no botão abaixo'
-                : feedbackType !== 'error' ? getErrorMessage(feedbackType) :
-                  'Por favor, tente novamente mais tarde.'}
+                : feedbackType !== 'error'
+                  ? getErrorMessage(feedbackType)
+                  : 'Por favor, tente novamente mais tarde.'}
             </Text>
             <View className="w-full">
               {feedbackType !== 'success' && (

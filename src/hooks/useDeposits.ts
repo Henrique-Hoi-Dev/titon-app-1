@@ -51,16 +51,14 @@ export type UseDepositsOptions = {
   onError?: (key: ErrorKey) => void
 }
 
-export function useDeposits(
-  freightId: number,
-  options?: UseDepositsOptions,
-) {
+export function useDeposits(freightId: number, options?: UseDepositsOptions) {
   const query = useQuery({
     queryKey: ['deposits', freightId],
     queryFn: async () => {
       const response = await Api.get<DepositsFetchResponse>(
-        `/v1/driver/deposits`, {
-          freight_id: freightId
+        `/v1/driver/deposits`,
+        {
+          freight_id: freightId,
         }
       )
 
@@ -92,7 +90,7 @@ export function useDeposits(
 
       const response = await Api.post<{ data: DepositsResponse }>(
         '/v1/driver/deposit',
-        data,
+        data
       )
 
       if (response.status !== 201) {

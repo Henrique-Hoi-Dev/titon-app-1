@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { ActivityIndicator, Alert, Text, View } from 'react-native'
+import { ActivityIndicator, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Layout } from '~/src/components/Layout'
 import { useFreight } from '~/src/hooks/useFreight'

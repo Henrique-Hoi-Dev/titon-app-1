@@ -13,7 +13,7 @@ const upload = async <T = unknown>(
   files: ImagePickerAsset | ImagePickerAsset[],
   field: string,
   httpMethod: 'POST' | 'PUT' | 'PATCH' = 'POST',
-  parameters?: Record<string, string>,
+  parameters?: Record<string, string>
 ): Promise<Response<T>> => {
   try {
     const shouldntHaveAuth = enpointsWithoutAuth.includes(url)

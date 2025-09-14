@@ -1,4 +1,4 @@
-name: CI/CD Front - Staging
+name: CI/CD iOS app - Staging
 
 on:
   push:
@@ -21,7 +21,7 @@ on:
       - 'feature/**'
 
 env:
-  NODE_VERSION: 20.12.2
+  NODE_VERSION: 20.18.1
 
 jobs:
   lint:

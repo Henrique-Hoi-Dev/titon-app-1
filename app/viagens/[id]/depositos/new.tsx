@@ -36,9 +36,9 @@ export default function App() {
   }
   const [step, setStep] = useState<keyof typeof stepsLabels>(1)
   const totalSteps = Object.keys(stepsLabels).length
-  const [feedbackType, setFeedbackType] = useState<'success' | 'error' | ErrorKey>(
-    'success',
-  )
+  const [feedbackType, setFeedbackType] = useState<
+    'success' | 'error' | ErrorKey
+  >('success')
   const [showFeedback, setShowFeedback] = useState(false)
   const insets = useSafeAreaInsets()
   const { id } = useLocalSearchParams<{
@@ -168,11 +168,11 @@ export default function App() {
               <Select
                 label="Tipo de transferência"
                 data={toSelectData(depositsTypes).sort((a, b) =>
-                  a.label.localeCompare(b.label),
+                  a.label.localeCompare(b.label)
                 )}
                 onSelect={(item) =>
                   handleChange('type_transaction')(
-                    item ? String(item.value) : '',
+                    item ? String(item.value) : ''
                   )
                 }
                 value={values.type_transaction}
@@ -182,7 +182,7 @@ export default function App() {
                 label="Conta"
                 searchable
                 data={toSelectData(banks).sort((a, b) =>
-                  a.label.localeCompare(b.label),
+                  a.label.localeCompare(b.label)
                 )}
                 onSelect={(item) =>
                   handleChange('type_bank')(item ? String(item.value) : '')
@@ -278,8 +278,9 @@ export default function App() {
             <Text className="">
               {feedbackType === 'success'
                 ? 'Para conferir seu depósito, clique no botão abaixo'
-                : feedbackType !== 'error' ? getErrorMessage(feedbackType) :
-                  'Por favor confira os dados inseridos ou tente novamente mais tarde'}
+                : feedbackType !== 'error'
+                  ? getErrorMessage(feedbackType)
+                  : 'Por favor confira os dados inseridos ou tente novamente mais tarde'}
             </Text>
             <View className="w-full">
               {feedbackType !== 'success' && (

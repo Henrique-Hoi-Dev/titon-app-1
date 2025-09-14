@@ -41,7 +41,7 @@ export type SelectProps<T> = {
 }
 
 const AnimatedMaterialCommunityIcons = Animated.createAnimatedComponent(
-  MaterialCommunityIcons,
+  MaterialCommunityIcons
 )
 
 export default function Select<T>({
@@ -84,7 +84,7 @@ export default function Select<T>({
       onSelect && onSelect(item.value === value ? undefined : item)
       ref?.current?.close()
     },
-    [ref, onSelect, value],
+    [ref, onSelect, value]
   )
 
   function renderItem({ item }: { item: Data<T> }) {

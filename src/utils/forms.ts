@@ -51,7 +51,7 @@ export const banks: Record<string, string>[] = [
 ]
 
 export const toSelectData = <T extends string = string>(
-  data: string[] | Record<string | number, T>[] | Record<string | number, T>,
+  data: string[] | Record<string | number, T>[] | Record<string | number, T>
 ): Data<T>[] => {
   if (Array.isArray(data)) {
     const ret = data.map((item) => {
@@ -98,7 +98,7 @@ export const getError = <T, K>(
   errors: T,
   key: keyof T,
   touched?: K,
-  validateOnlyWhenTouched = false,
+  validateOnlyWhenTouched = false
 ) => {
   if (touched && touched[key as unknown as keyof K] && errors[key]) {
     return errors[key]

@@ -8,7 +8,9 @@ import Toast from 'react-native-toast-message'
 import { getErrorMessage } from '../utils/errors'
 
 export const enpointsWithoutAuth = ['/v1/driver/signin']
-export const enpointsThatCannotRedirectWhenResponseStatusIs401 = ['/v1/driver/profile']
+export const enpointsThatCannotRedirectWhenResponseStatusIs401 = [
+  '/v1/driver/profile',
+]
 
 export const getToken = async () => {
   const token = await AsyncStorage.getItem(`@${Config.appName}_token`)
@@ -18,11 +20,12 @@ export const getToken = async () => {
 export const Api = async <T = unknown>(
   method: Methods | Lowercase<Methods>,
   url: string,
-  data?: Data,
+  data?: Data
 ): Promise<Response<T>> => {
   try {
     const shouldntHaveAuth = enpointsWithoutAuth.includes(url)
-    const shouldRedirectWhenReach401 = !enpointsThatCannotRedirectWhenResponseStatusIs401.includes(url)
+    const shouldRedirectWhenReach401 =
+      !enpointsThatCannotRedirectWhenResponseStatusIs401.includes(url)
     const token = await getToken()
     const headers = new Headers()
 
@@ -64,7 +67,7 @@ export const Api = async <T = unknown>(
             if (
               data &&
               (data[field] as string)?.match(
-                /^(0?[1-9]|[12][0-9]|3[01])[/-](0?[1-9]|1[012])[/-]\d{4}/,
+                /^(0?[1-9]|[12][0-9]|3[01])[/-](0?[1-9]|1[012])[/-]\d{4}/
               )
             ) {
               data[field] = (data[field] as string)
@@ -107,8 +110,9 @@ export const Api = async <T = unknown>(
     const jsonParsedResponse = (await response.json()) as T
 
     console.log(
-      `${new Date().getTime()} [${method.toUpperCase()}] ${fullUrl} - ${response.status
-      } - ${JSON.stringify(data)} - ${JSON.stringify(jsonParsedResponse)}`,
+      `${new Date().getTime()} [${method.toUpperCase()}] ${fullUrl} - ${
+        response.status
+      } - ${JSON.stringify(data)} - ${JSON.stringify(jsonParsedResponse)}`
     )
 
     if (!response.ok) {
@@ -139,7 +143,7 @@ export const Api = async <T = unknown>(
 
 export const mapUrlWithParams = (
   url: string,
-  params: Partial<Data>,
+  params: Partial<Data>
 ): [string, Partial<Data>] => {
   Object.keys(params).forEach((key) => {
     if (url.includes(`:${key}`)) {
@@ -153,35 +157,35 @@ export const mapUrlWithParams = (
 
 const get = async <T = unknown>(
   url: string,
-  data?: Data,
+  data?: Data
 ): Promise<Response<T>> => {
   return Api<T>('get', url, data)
 }
 
 const post = async <T = unknown>(
   url: string,
-  data?: Data,
+  data?: Data
 ): Promise<Response<T>> => {
   return Api<T>('post', url, data)
 }
 
 const patch = async <T = unknown>(
   url: string,
-  data?: Data,
+  data?: Data
 ): Promise<Response<T>> => {
   return Api<T>('patch', url, data)
 }
 
 const put = async <T = unknown>(
   url: string,
-  data?: Data,
+  data?: Data
 ): Promise<Response<T>> => {
   return Api<T>('put', url, data)
 }
 
 const _delete = async <T = unknown>(
   url: string,
-  data?: Data,
+  data?: Data
 ): Promise<Response<T>> => {
   return Api<T>('delete', url, data)
 }

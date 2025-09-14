@@ -19,9 +19,9 @@ const DateInput = ({
   onFocus,
   onBlur,
   placeholder,
-  className,
+  className: _className,
   isFocused,
-  right,
+  right: _right,
   error,
   onChangeText,
   ...props
@@ -55,12 +55,12 @@ const DateInput = ({
           ?.split('T')?.[0]
           ?.split('-')
           ?.reverse()
-          ?.join('/') || '',
+          ?.join('/') || ''
       )
 
       setDatePickerVisibility(false)
     },
-    [onChangeText],
+    [onChangeText]
   )
 
   return (

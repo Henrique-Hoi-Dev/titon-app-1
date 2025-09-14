@@ -32,7 +32,13 @@ export type FreightResponse = {
   ton_value: number
   route_distance_km: string
   route_duration: string
-  status: "DRAFT" | "PENDING" | "APPROVED" | "DENIED" | "FINISHED" | "STARTING_TRIP"
+  status:
+    | 'DRAFT'
+    | 'PENDING'
+    | 'APPROVED'
+    | 'DENIED'
+    | 'FINISHED'
+    | 'STARTING_TRIP'
   tons_loaded: any
   toll_cost: any
   truck_km_end_trip: any
@@ -42,8 +48,8 @@ export type FreightResponse = {
   img_proof_freight_letter: FreightFile
   createdAt: string
   updatedAt: string
-  restock: Restock[],
-  travelExpense: Travel[],
+  restock: Restock[]
+  travelExpense: Travel[]
   depositMoney: Deposit[]
 }
 
@@ -104,7 +110,7 @@ export function useFinancialStatement() {
     queryKey: ['financialStatement'],
     queryFn: async () => {
       const response = await Api.get<FinancialStatementResponse>(
-        `/v1/driver/financial/current`,
+        `/v1/driver/financial/current`
       )
 
       if (response.status !== 200) {
@@ -124,7 +130,7 @@ export function useFinancialStatement() {
 }
 
 const mapData = (
-  financialStatement: FinancialStatementResponse['data'],
+  financialStatement: FinancialStatementResponse['data']
 ): FinancialStatement => ({
   id: financialStatement.id,
   creator_user_id: financialStatement.creator_user_id,
@@ -155,7 +161,7 @@ const mapData = (
       'updatedAt',
       'restock',
       'travelExpense',
-      'depositMoney'
+      'depositMoney',
     ])
     return freightMapData(camelCasedFreight)
   }),

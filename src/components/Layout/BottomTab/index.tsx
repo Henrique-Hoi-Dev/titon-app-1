@@ -61,7 +61,7 @@ export default function BottomTab(): JSX.Element | null {
       try {
         Keyboard.removeAllListeners('keyboardDidShow')
         Keyboard.removeAllListeners('keyboardDidHide')
-      } catch (error) { }
+      } catch (error) {}
     }
   }, [isPageToHide, shouldHideBottomTab])
 

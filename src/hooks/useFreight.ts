@@ -23,7 +23,13 @@ export declare type Freight = {
   ton_value: number
   route_distance_km: string
   route_duration: string
-  status: "DRAFT" | "PENDING" | "APPROVED" | "DENIED" | "FINISHED" | "STARTING_TRIP"
+  status:
+    | 'DRAFT'
+    | 'PENDING'
+    | 'APPROVED'
+    | 'DENIED'
+    | 'FINISHED'
+    | 'STARTING_TRIP'
   tons_loaded: any
   toll_cost: any
   truck_km_end_trip: any
@@ -104,9 +110,16 @@ export function useFreight(freightId: number) {
   const query = useQuery({
     queryKey: ['freight', freightId],
     queryFn: async () => {
-      const response = await Api.get<{ data: CamelCase<FreightResponse, 'createdAt' | 'updatedAt' | 'restock' | 'travelExpense' | 'depositMoney'> }>(
-        `/v1/driver/freight/${freightId}/${financialStatement?.id || ''}`,
-      )
+      const response = await Api.get<{
+        data: CamelCase<
+          FreightResponse,
+          | 'createdAt'
+          | 'updatedAt'
+          | 'restock'
+          | 'travelExpense'
+          | 'depositMoney'
+        >
+      }>(`/v1/driver/freight/${freightId}/${financialStatement?.id || ''}`)
 
       if (response.status !== 200) {
         throw Error('Erro ao buscar os viagens')
@@ -125,7 +138,12 @@ export function useFreight(freightId: number) {
   }
 }
 
-export const mapData = (freight: CamelCase<FreightResponse, 'createdAt' | 'updatedAt' | 'restock' | 'travelExpense' | 'depositMoney'>): Freight => ({
+export const mapData = (
+  freight: CamelCase<
+    FreightResponse,
+    'createdAt' | 'updatedAt' | 'restock' | 'travelExpense' | 'depositMoney'
+  >
+): Freight => ({
   id: freight.id,
   financial_statements_id: freight.financialStatementsId,
   start_freight_city: freight.startFreightCity,

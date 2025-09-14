@@ -48,7 +48,7 @@ export default function App() {
         disabled: false,
       },
     ],
-    [],
+    []
   )
   const { id, tab } = useLocalSearchParams<RouteParams>()
   const [activeTab, setActiveTab] = useState<Tab['id']>(tab ?? 'informacoes')
@@ -82,8 +82,8 @@ export default function App() {
               index === 0
                 ? 'mr-4'
                 : index === tabs.length - 1
-                ? 'ml-4 mr-8'
-                : 'mx-4'
+                  ? 'ml-4 mr-8'
+                  : 'mx-4'
             } ${activeTab === tab.id ? 'border-b-2 border-primary-700' : ''}`}
           >
             <Text

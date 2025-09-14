@@ -11,7 +11,7 @@ import api from '~/src/services/api'
 export default function App() {
   const router = useRouter()
   const [code, setCode] = useState('')
-  const [error, setError] = useState('')
+  const [error, _setError] = useState('')
 
   const mutation = useMutation({
     mutationFn: async (code: string) => {
@@ -21,7 +21,7 @@ export default function App() {
 
       if (response.status !== 200) {
         throw new Error(
-          'Erro ao validar o código, verifique o código informado e tente novamente.',
+          'Erro ao validar o código, verifique o código informado e tente novamente.'
         )
       }
 

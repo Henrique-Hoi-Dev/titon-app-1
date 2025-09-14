@@ -6,9 +6,6 @@ export default function Heading({
   className: propsClassName,
   ...props
 }: TextProps) {
-  const className = twMerge(
-    'text-primary  text-xl text-center',
-    propsClassName,
-  )
+  const className = twMerge('text-primary  text-xl text-center', propsClassName)
   return <Text {...props} className={className} />
 }

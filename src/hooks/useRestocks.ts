@@ -66,7 +66,7 @@ export function useRestocks(freightId: number, options?: UseRestocksOptions) {
         `/v1/driver/restocks`,
         {
           freight_id: freightId,
-        }
+        },
       )
 
       if (response.status !== 200) {
@@ -101,7 +101,7 @@ export function useRestocks(freightId: number, options?: UseRestocksOptions) {
 
       const response = await Api.post<{ data: RestocksResponse }>(
         '/v1/driver/restock',
-        data
+        data,
       )
 
       if (response.status !== 201) {

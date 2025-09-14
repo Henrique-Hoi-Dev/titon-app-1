@@ -48,7 +48,7 @@ export default function App() {
         disabled: false,
       },
     ],
-    []
+    [],
   )
   const { id, tab } = useLocalSearchParams<RouteParams>()
   const [activeTab, setActiveTab] = useState<Tab['id']>(tab ?? 'informacoes')

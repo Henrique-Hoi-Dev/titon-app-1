@@ -27,7 +27,7 @@ export default function useNotifications() {
         '/v1/driver/notifications',
         {
           page: pageParam as number,
-        }
+        },
       )
 
       return {
@@ -78,7 +78,7 @@ export default function useNotifications() {
     isFetching: notifications.isFetching,
     refetch: notifications.refetch,
     hasUnread: notifications.data?.pages.some((page) =>
-      page.data.some((notification) => !notification.read)
+      page.data.some((notification) => !notification.read),
     ),
     onRead: async (id?: number) => await readMutation.mutateAsync(id),
   }

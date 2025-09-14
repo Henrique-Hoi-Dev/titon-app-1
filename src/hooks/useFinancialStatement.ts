@@ -110,7 +110,7 @@ export function useFinancialStatement() {
     queryKey: ['financialStatement'],
     queryFn: async () => {
       const response = await Api.get<FinancialStatementResponse>(
-        `/v1/driver/financial/current`
+        `/v1/driver/financial/current`,
       )
 
       if (response.status !== 200) {
@@ -130,7 +130,7 @@ export function useFinancialStatement() {
 }
 
 const mapData = (
-  financialStatement: FinancialStatementResponse['data']
+  financialStatement: FinancialStatementResponse['data'],
 ): FinancialStatement => ({
   id: financialStatement.id,
   creator_user_id: financialStatement.creator_user_id,

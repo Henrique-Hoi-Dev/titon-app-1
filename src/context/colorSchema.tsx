@@ -138,7 +138,7 @@ export const useColorScheme = () => {
         statusBarStyle: newColorScheme === 'light' ? 'dark' : 'light',
       })
     },
-    [circle, colorScheme, dispatch, ref, setNativewindColorScheme, transition]
+    [circle, colorScheme, dispatch, ref, setNativewindColorScheme, transition],
   )
   return { colorScheme, toggle, active }
 }

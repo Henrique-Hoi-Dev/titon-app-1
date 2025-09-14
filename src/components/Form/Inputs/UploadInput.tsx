@@ -46,7 +46,7 @@ function Upload(
     onPickEnd,
     onFilePick,
   }: UploadInputProps,
-  ref: React.Ref<UploadInputRef>
+  ref: React.Ref<UploadInputRef>,
 ) {
   const [file, setImage] = useState<ImagePicker.ImagePickerAsset>()
   const [loading, setLoading] = useState(false)
@@ -90,7 +90,7 @@ function Upload(
         throw new Error('Imagem não selecionada')
       },
     }),
-    [file, uploadImage]
+    [file, uploadImage],
   )
 
   useEffect(() => {
@@ -185,7 +185,7 @@ export function useUpload({
         file,
         'file',
         'PATCH',
-        parameters
+        parameters,
       )
       onUploadEnd?.()
 

@@ -35,7 +35,7 @@ export function toCamelCase<
       result[key] = obj[key]
     } else {
       const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) =>
-        letter.toUpperCase()
+        letter.toUpperCase(),
       )
       result[camelCaseKey as keyof CamelCase<T, K>] = obj[key]
     }

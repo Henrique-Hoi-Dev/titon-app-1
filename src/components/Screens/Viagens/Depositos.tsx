@@ -25,8 +25,8 @@ export default function Depositos({ id }: { id: number }) {
           ...deposit,
           created_at: moment(deposit.createdAt).format('DD/MM/YYYY'),
         })),
-      'created_at'
-    )
+      'created_at',
+    ),
   ).map((group) => {
     let title = moment(group[0].createdAt).format('DD/MM/YYYY')
 

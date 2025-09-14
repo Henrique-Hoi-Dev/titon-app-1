@@ -142,7 +142,7 @@ export const mapData = (
   freight: CamelCase<
     FreightResponse,
     'createdAt' | 'updatedAt' | 'restock' | 'travelExpense' | 'depositMoney'
-  >
+  >,
 ): Freight => ({
   id: freight.id,
   financial_statements_id: freight.financialStatementsId,

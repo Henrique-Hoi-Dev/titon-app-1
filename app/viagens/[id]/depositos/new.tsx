@@ -168,11 +168,11 @@ export default function App() {
               <Select
                 label="Tipo de transferência"
                 data={toSelectData(depositsTypes).sort((a, b) =>
-                  a.label.localeCompare(b.label)
+                  a.label.localeCompare(b.label),
                 )}
                 onSelect={(item) =>
                   handleChange('type_transaction')(
-                    item ? String(item.value) : ''
+                    item ? String(item.value) : '',
                   )
                 }
                 value={values.type_transaction}
@@ -182,7 +182,7 @@ export default function App() {
                 label="Conta"
                 searchable
                 data={toSelectData(banks).sort((a, b) =>
-                  a.label.localeCompare(b.label)
+                  a.label.localeCompare(b.label),
                 )}
                 onSelect={(item) =>
                   handleChange('type_bank')(item ? String(item.value) : '')

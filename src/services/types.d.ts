@@ -36,7 +36,7 @@ export declare type Response<T> = {
 
 export declare type ApiType<T> = (
   url: string,
-  data?: Data
+  data?: Data,
 ) => Promise<Response<T> | unknown>
 
 export declare type RootApiType<T> = {
@@ -49,5 +49,5 @@ export declare type RootApiType<T> = {
 
 export declare type ApiUploadType<T> = (
   url: string,
-  data?: UploadData
+  data?: UploadData,
 ) => Promise<Response<T> | unknown>

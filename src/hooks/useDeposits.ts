@@ -59,7 +59,7 @@ export function useDeposits(freightId: number, options?: UseDepositsOptions) {
         `/v1/driver/deposits`,
         {
           freight_id: freightId,
-        }
+        },
       )
 
       if (response.status !== 200) {
@@ -90,7 +90,7 @@ export function useDeposits(freightId: number, options?: UseDepositsOptions) {
 
       const response = await Api.post<{ data: DepositsResponse }>(
         '/v1/driver/deposit',
-        data
+        data,
       )
 
       if (response.status !== 201) {

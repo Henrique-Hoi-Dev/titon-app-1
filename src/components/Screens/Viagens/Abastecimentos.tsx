@@ -25,8 +25,8 @@ export default function Abastecimentos({ id }: { id: number }) {
           ...restock,
           created_at: moment(restock.createdAt).format('DD/MM/YYYY'),
         })),
-      'created_at'
-    )
+      'created_at',
+    ),
   ).map((group) => {
     let title = moment(group[0].createdAt).format('DD/MM/YYYY')
 

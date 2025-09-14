@@ -25,8 +25,8 @@ export default function Despesas({ id }: { id: number }) {
           ...travel,
           created_at: moment(travel.createdAt).format('DD/MM/YYYY'),
         })),
-      'created_at'
-    )
+      'created_at',
+    ),
   ).map((group) => {
     let title = moment(group[0].createdAt).format('DD/MM/YYYY')
 

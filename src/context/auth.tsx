@@ -123,7 +123,7 @@ export function AuthProvider(props: PropsWithChildren) {
       }
 
       const asyncStorageToken = await AsyncStorage.getItem(
-        `@${config.appName}_token`
+        `@${config.appName}_token`,
       )
 
       if (

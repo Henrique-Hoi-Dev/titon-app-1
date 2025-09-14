@@ -21,7 +21,7 @@ export default function App() {
 
       if (response.status !== 200) {
         throw new Error(
-          'Erro ao validar o código, verifique o código informado e tente novamente.'
+          'Erro ao validar o código, verifique o código informado e tente novamente.',
         )
       }
 

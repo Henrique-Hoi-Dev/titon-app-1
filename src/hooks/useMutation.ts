@@ -17,7 +17,7 @@ export function useMutation<
     onErrorMessage?: string
     onSuccessMessage?: string
   },
-  queryClient?: QueryClient
+  queryClient?: QueryClient,
 ): UseMutationResult<TData, TError, TVariables, TContext> {
   return useMutationTRQ(
     {
@@ -43,6 +43,6 @@ export function useMutation<
         options.onSuccess?.(data, variables, context)
       },
     },
-    queryClient
+    queryClient,
   )
 }

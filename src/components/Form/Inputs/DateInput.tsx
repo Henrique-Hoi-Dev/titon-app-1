@@ -55,12 +55,12 @@ const DateInput = ({
           ?.split('T')?.[0]
           ?.split('-')
           ?.reverse()
-          ?.join('/') || ''
+          ?.join('/') || '',
       )
 
       setDatePickerVisibility(false)
     },
-    [onChangeText]
+    [onChangeText],
   )
 
   return (

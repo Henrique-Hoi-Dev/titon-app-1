@@ -55,7 +55,7 @@ export default function App() {
   const [currentFreightId, setCurrentFreightId] = useState(freightId)
   const totalSteps = 4
   const [feedbackType, setFeedbackType] = useState<'success' | 'error'>(
-    'success'
+    'success',
   )
   const [showFeedback, setShowFeedback] = useState(false)
   const queryClient = useQueryClient()
@@ -140,7 +140,7 @@ export default function App() {
           start_freight_state: string
           final_freight_state: string
         }
-      >
+      >,
     ) => {
       const apiMethod = !currentFreightId ? api.post : api.patch
 
@@ -161,7 +161,7 @@ export default function App() {
         errors?: Record<keyof Freight, string>
       }>(
         `/v1/driver/freight${currentFreightId ? `/${currentFreightId}` : ''}`,
-        values
+        values,
       )
 
       if (response.status === 201 || response.status === 200) {
@@ -319,7 +319,7 @@ export default function App() {
                   data={
                     cities.data
                       ?.filter(
-                        (city) => city.states.uf === values.start_freight_state
+                        (city) => city.states.uf === values.start_freight_state,
                       )
                       .map((city) => ({
                         label: city.name,
@@ -360,7 +360,7 @@ export default function App() {
                   data={
                     cities.data
                       ?.filter(
-                        (city) => city.states.uf === values.final_freight_state
+                        (city) => city.states.uf === values.final_freight_state,
                       )
                       .map((city) => ({
                         label: city.name,

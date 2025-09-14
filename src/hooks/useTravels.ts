@@ -67,7 +67,7 @@ export function useTravels(freightId: number, options?: UseTravelsOptions) {
         `/v1/driver/restocks`,
         {
           freight_id: freightId,
-        }
+        },
       )
 
       if (response.status !== 200) {
@@ -98,13 +98,13 @@ export function useTravels(freightId: number, options?: UseTravelsOptions) {
 
       const response = await Api.post<{ data: TravelsResponse }>(
         '/v1/driver/travel',
-        data
+        data,
       )
 
       if (response.status !== 201) {
         throw new Error(
           (response.data as unknown as TravelErrorResponse).key ||
-            'Erro ao salvar despesa'
+            'Erro ao salvar despesa',
         )
       }
 

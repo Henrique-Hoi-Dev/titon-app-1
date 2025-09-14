@@ -169,7 +169,7 @@ export default function App() {
                 data={toSelectData(establishmentTypes)}
                 onSelect={(item) =>
                   handleChange('type_establishment')(
-                    item ? String(item.value) : ''
+                    item ? String(item.value) : '',
                   )
                 }
                 value={values.type_establishment}
@@ -202,7 +202,7 @@ export default function App() {
                 data={toSelectData(transactionTypes)}
                 onSelect={(item) =>
                   handleChange('type_transaction')(
-                    item ? String(item.value) : ''
+                    item ? String(item.value) : '',
                   )
                 }
                 value={values.type_transaction}

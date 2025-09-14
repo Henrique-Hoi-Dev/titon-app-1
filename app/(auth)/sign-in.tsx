@@ -36,7 +36,7 @@ export default function App() {
 
       await signIn(values.cpf.replace(/\D/g, ''), values.password)
     },
-    [signIn]
+    [signIn],
   )
 
   return (

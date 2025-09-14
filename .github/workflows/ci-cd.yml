@@ -128,7 +128,7 @@ jobs:
           fi
       - run: yarn build:web
       - name: Upload build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: web-build/

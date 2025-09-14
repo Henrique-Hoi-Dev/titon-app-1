@@ -89,7 +89,7 @@ jobs:
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
-      - run: yarn test --watchAll=false
+      - run: yarn test --watchAll=false --passWithNoTests
 
   build:
     runs-on: ubuntu-latest

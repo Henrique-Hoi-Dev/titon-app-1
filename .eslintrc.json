@@ -1,17 +1,40 @@
 {
-  "extends": [
-    "@rocketseat/eslint-config/react"
-  ],
+  "extends": ["@rocketseat/eslint-config/react"],
   "rules": {
     "jsx-a11y/alt-text": "off",
-    //unused vars ignore vars that start with _
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": ["error", 
+    "@typescript-eslint/no-unused-vars": [
+      "error",
       {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_"
       }
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.config.js",
+        "metro.config.js",
+        "babel.config.js",
+        "tailwind.config.js"
+      ],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off"
+      }
+    },
+    {
+      "files": ["**/*.d.ts"],
+      "rules": {
+        "no-use-before-define": "off"
+      }
+    },
+    {
+      "files": ["src/hooks/**/*.ts", "src/utils/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ]
 }

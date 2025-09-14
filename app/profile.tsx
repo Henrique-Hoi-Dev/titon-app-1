@@ -1,7 +1,7 @@
 import { useAuth } from '~/src/context/auth'
 import { Layout, Header } from '~/src/components/Layout'
 import { Pressable, ScrollView, Text, View } from 'react-native'
-import { useRouter } from 'expo-router'
+// import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import Card from '~/src/components/Card'
 import { Button, PasswordInput, TextInput } from '~/src/components/Form'
@@ -21,10 +21,10 @@ function AccountTab() {
 }
 
 function SecurityTab() {
-  const { user } = useAuth()
-  const mutation = useMutation({
+  const { user: _user } = useAuth()
+  const _mutation = useMutation({
     mutationFn: async () => {
-      const response = api.put(`/driver/forgot-password`)
+      await api.put(`/driver/forgot-password`)
     },
     onErrorMessage: 'Erro ao atualizar senha',
     onSuccessMessage: 'Senha atualizada com sucesso',
@@ -55,7 +55,6 @@ function SecurityTab() {
 }
 
 export default function Profile() {
-  const router = useRouter()
   const [tab, setTab] = useState<'account' | 'security'>('account')
   return (
     <Layout className="w-full h-full bg-zinc-200">

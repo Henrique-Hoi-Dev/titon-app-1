@@ -3,7 +3,7 @@ import Api from '../services/api'
 import { toJsonBody } from '../utils/forms'
 import { useQuery } from '@tanstack/react-query'
 import { useMutation } from './useMutation'
-import { useFreight } from './useFreight'
+// import { useFreight } from './useFreight'
 import { ErrorKey } from '../utils/errors'
 
 export declare type Restock = {
@@ -63,9 +63,10 @@ export function useRestocks(freightId: number, options?: UseRestocksOptions) {
     queryKey: ['deposits', freightId],
     queryFn: async () => {
       const response = await Api.get<RestocksFetchResponse>(
-        `/v1/driver/restocks`, {
-          freight_id: freightId
-        }
+        `/v1/driver/restocks`,
+        {
+          freight_id: freightId,
+        },
       )
 
       if (response.status !== 200) {
@@ -125,18 +126,4 @@ export function useRestocks(freightId: number, options?: UseRestocksOptions) {
     error: query.error || mutation.error,
   }
 }
-
-const mapData = (restock: RestocksResponse): Restock => ({
-  id: restock.id,
-  financial_statements_id: restock.financialStatementsId,
-  freight_id: restock.freightId,
-  name_establishment: restock.nameEstablishment,
-  city: restock.city,
-  date: new Date(restock.registrationDate),
-  value_fuel: restock.valueFuel,
-  liters_fuel: restock.litersFuel,
-  total_nota_value: restock.totalNotaValue || 0,
-  total_value_fuel: restock.totalValueFuel || 0,
-  createdAt: new Date(restock.createdAt),
-  updatedAt: new Date(restock.updatedAt),
-})
+// mapData está disponível se necessário no futuro

@@ -32,7 +32,13 @@ export type FreightResponse = {
   ton_value: number
   route_distance_km: string
   route_duration: string
-  status: "DRAFT" | "PENDING" | "APPROVED" | "DENIED" | "FINISHED" | "STARTING_TRIP"
+  status:
+    | 'DRAFT'
+    | 'PENDING'
+    | 'APPROVED'
+    | 'DENIED'
+    | 'FINISHED'
+    | 'STARTING_TRIP'
   tons_loaded: any
   toll_cost: any
   truck_km_end_trip: any
@@ -42,8 +48,8 @@ export type FreightResponse = {
   img_proof_freight_letter: FreightFile
   createdAt: string
   updatedAt: string
-  restock: Restock[],
-  travelExpense: Travel[],
+  restock: Restock[]
+  travelExpense: Travel[]
   depositMoney: Deposit[]
 }
 
@@ -155,7 +161,7 @@ const mapData = (
       'updatedAt',
       'restock',
       'travelExpense',
-      'depositMoney'
+      'depositMoney',
     ])
     return freightMapData(camelCasedFreight)
   }),

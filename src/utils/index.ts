@@ -1,4 +1,4 @@
-import { CamelCaseString, CamelCase } from '../@types/utils'
+import { CamelCase } from '../@types/utils'
 import { User } from '../context/auth'
 import { Freight } from '../hooks'
 
@@ -24,17 +24,19 @@ export const getComissao = (viagens: Freight[] | Freight, user: User) => {
   )
 }
 
-export function toCamelCase<T extends Record<string, any>, K extends keyof T = never>(
-  obj: T,
-  keysToSkip: K[] = []
-): CamelCase<T, K> {
+export function toCamelCase<
+  T extends Record<string, any>,
+  K extends keyof T = never,
+>(obj: T, keysToSkip: K[] = []): CamelCase<T, K> {
   const result: any = {}
 
   for (const key in obj) {
     if ((keysToSkip as readonly (keyof T)[]).includes(key)) {
       result[key] = obj[key]
     } else {
-      const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+      const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) =>
+        letter.toUpperCase(),
+      )
       result[camelCaseKey as keyof CamelCase<T, K>] = obj[key]
     }
   }

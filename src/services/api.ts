@@ -8,7 +8,9 @@ import Toast from 'react-native-toast-message'
 import { getErrorMessage } from '../utils/errors'
 
 export const enpointsWithoutAuth = ['/v1/driver/signin']
-export const enpointsThatCannotRedirectWhenResponseStatusIs401 = ['/v1/driver/profile']
+export const enpointsThatCannotRedirectWhenResponseStatusIs401 = [
+  '/v1/driver/profile',
+]
 
 export const getToken = async () => {
   const token = await AsyncStorage.getItem(`@${Config.appName}_token`)
@@ -22,7 +24,8 @@ export const Api = async <T = unknown>(
 ): Promise<Response<T>> => {
   try {
     const shouldntHaveAuth = enpointsWithoutAuth.includes(url)
-    const shouldRedirectWhenReach401 = !enpointsThatCannotRedirectWhenResponseStatusIs401.includes(url)
+    const shouldRedirectWhenReach401 =
+      !enpointsThatCannotRedirectWhenResponseStatusIs401.includes(url)
     const token = await getToken()
     const headers = new Headers()
 
@@ -107,7 +110,8 @@ export const Api = async <T = unknown>(
     const jsonParsedResponse = (await response.json()) as T
 
     console.log(
-      `${new Date().getTime()} [${method.toUpperCase()}] ${fullUrl} - ${response.status
+      `${new Date().getTime()} [${method.toUpperCase()}] ${fullUrl} - ${
+        response.status
       } - ${JSON.stringify(data)} - ${JSON.stringify(jsonParsedResponse)}`,
     )
 

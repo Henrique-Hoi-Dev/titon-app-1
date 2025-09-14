@@ -58,8 +58,8 @@ export function AuthProvider(props: PropsWithChildren) {
     try {
       const response = await Api.get<ProfileResponse>('/v1/driver/profile', {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       })
 
       if (response.status === 401) {

@@ -51,7 +51,7 @@ interface ColorSchemeContext extends ColorScheme {
 
 const defaultValue: ColorScheme = {
   active: false,
-  statusBarStyle: Appearance.getColorScheme() ?? 'light' ? 'dark' : 'light',
+  statusBarStyle: (Appearance.getColorScheme() ?? 'light') ? 'dark' : 'light',
   colorScheme: Appearance.getColorScheme() ?? 'light',
   overlay1: null,
   overlay2: null,

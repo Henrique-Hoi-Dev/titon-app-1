@@ -11,7 +11,7 @@ import api from '~/src/services/api'
 export default function App() {
   const router = useRouter()
   const [code, setCode] = useState('')
-  const [error, setError] = useState('')
+  const [error, _setError] = useState('')
 
   const mutation = useMutation({
     mutationFn: async (code: string) => {

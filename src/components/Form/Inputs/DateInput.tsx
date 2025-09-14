@@ -19,9 +19,9 @@ const DateInput = ({
   onFocus,
   onBlur,
   placeholder,
-  className,
+  className: _className,
   isFocused,
-  right,
+  right: _right,
   error,
   onChangeText,
   ...props

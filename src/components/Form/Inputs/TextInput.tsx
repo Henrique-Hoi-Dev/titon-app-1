@@ -67,8 +67,8 @@ const TextInput = forwardRef(
                 isFocusedInternal && !error
                   ? 'border-primary-500'
                   : error
-                  ? 'border-red-500'
-                  : 'border-gray-500'
+                    ? 'border-red-500'
+                    : 'border-gray-500'
               } h-12 pr-12 pl-4 w-full bg-gray-200 `,
             )}
             onFocus={(event: NativeSyntheticEvent<TextInputFocusEventData>) => {

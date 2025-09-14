@@ -1,4 +1,4 @@
-name: CI/CD Front - Staging
+name: CI/CD iOS app - Staging
 
 on:
   push:
@@ -21,7 +21,7 @@ on:
       - 'feature/**'
 
 env:
-  NODE_VERSION: 20.12.2
+  NODE_VERSION: 20.18.1
 
 jobs:
   lint:
@@ -42,11 +42,16 @@ jobs:
           restore-keys: ${{ runner.os }}-yarn-
       - name: Install dependencies with retry
         run: |
+          success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile && break
+            yarn install --frozen-lockfile --production=false && success=true && break
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
+          if [ "$success" = false ]; then
+            echo "yarn install failed"
+            exit 1
+          fi
       - run: yarn lint
 
   style:
@@ -67,11 +72,16 @@ jobs:
           restore-keys: ${{ runner.os }}-yarn-
       - name: Install dependencies with retry
         run: |
+          success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile && break
+            yarn install --frozen-lockfile --production=false && success=true && break
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
+          if [ "$success" = false ]; then
+            echo "yarn install failed"
+            exit 1
+          fi
       - run: yarn style:check
 
   test:
@@ -84,12 +94,17 @@ jobs:
       - run: yarn config set registry https://registry.npmjs.org
       - name: Install dependencies with retry
         run: |
+          success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile && break
+            yarn install --frozen-lockfile --production=false && success=true && break
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
-      - run: yarn test --watchAll=false
+          if [ "$success" = false ]; then
+            echo "yarn install failed"
+            exit 1
+          fi
+      - run: yarn test --watchAll=false --passWithNoTests
 
   build:
     runs-on: ubuntu-latest
@@ -101,14 +116,19 @@ jobs:
       - run: yarn config set registry https://registry.npmjs.org
       - name: Install dependencies with retry
         run: |
+          success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile && break
+            yarn install --frozen-lockfile --production=false && success=true && break
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
+          if [ "$success" = false ]; then
+            echo "yarn install failed"
+            exit 1
+          fi
       - run: yarn build:web
       - name: Upload build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: web-build/

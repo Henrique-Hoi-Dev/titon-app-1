@@ -60,33 +60,34 @@ export type UseTravelsOptions = {
 }
 
 export function useTravels(freightId: number, options?: UseTravelsOptions) {
-    const query = useQuery({
-      queryKey: ['deposits', freightId],
-      queryFn: async () => {
-        const response = await Api.get<TravelsFetchResponse>(
-          `/v1/driver/restocks`, {
-            freight_id: freightId
-          }
-        )
-  
-        if (response.status !== 200) {
-          throw Error('Erro ao buscar os depósitos')
-        }
-  
-        return response.data.data.docs.map((item) => ({
-          ...item,
-          id: item.id,
-          financial_statements_id: item.financialStatementsId,
-          freight_id: item.freightId,
-          name_establishment: item.nameEstablishment,
-          city: item.city,
-          registration_date: new Date(item.registrationDate),
-          createdAt: new Date(item.createdAt),
-          updatedAt: new Date(item.updatedAt),
-        })) as unknown as Travel[]
-      },
-      enabled: freightId !== 0,
-    })
+  const query = useQuery({
+    queryKey: ['deposits', freightId],
+    queryFn: async () => {
+      const response = await Api.get<TravelsFetchResponse>(
+        `/v1/driver/restocks`,
+        {
+          freight_id: freightId,
+        },
+      )
+
+      if (response.status !== 200) {
+        throw Error('Erro ao buscar os depósitos')
+      }
+
+      return response.data.data.docs.map((item) => ({
+        ...item,
+        id: item.id,
+        financial_statements_id: item.financialStatementsId,
+        freight_id: item.freightId,
+        name_establishment: item.nameEstablishment,
+        city: item.city,
+        registration_date: new Date(item.registrationDate),
+        createdAt: new Date(item.createdAt),
+        updatedAt: new Date(item.updatedAt),
+      })) as unknown as Travel[]
+    },
+    enabled: freightId !== 0,
+  })
 
   const mutation = useMutation({
     mutationFn: async ({ freightId, travel }: StoreType) => {
@@ -101,7 +102,10 @@ export function useTravels(freightId: number, options?: UseTravelsOptions) {
       )
 
       if (response.status !== 201) {
-        throw new Error((response.data as unknown as TravelErrorResponse).key || 'Erro ao salvar despesa')
+        throw new Error(
+          (response.data as unknown as TravelErrorResponse).key ||
+            'Erro ao salvar despesa',
+        )
       }
 
       return response.data

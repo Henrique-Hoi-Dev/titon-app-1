@@ -1,7 +1,7 @@
 import { TextInput, TextInputProps, View } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 
-const SearchInput = ({ className, ...props }: TextInputProps) => {
+const SearchInput = ({ ...props }: TextInputProps) => {
   return (
     <View className="w-full relative">
       <View className="absolute top-3 left-3 z-50">

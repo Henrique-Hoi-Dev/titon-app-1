@@ -1,45 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import {
-  FreightFile,
-  FreightResponse,
-  FreightStatus,
-  useFinancialStatement,
-} from './useFinancialStatement'
+import { Freight, FreightResponse, FreightStatus } from '../types/freight'
+import { useFinancialStatement } from './useFinancialStatement'
 import Api from '../services/api'
 import { CamelCase } from '../@types/utils'
-
-export declare type Freight = {
-  id: number
-  financial_statements_id: number
-  start_freight_city: string
-  end_freight_city: string
-  is_on_the_way: boolean
-  truck_location: string
-  contractor_name: string
-  truck_current_km: number
-  fuel_avg_per_km: number
-  estimated_tonnage: number
-  estimated_fuel_cost: number
-  ton_value: number
-  route_distance_km: string
-  route_duration: string
-  status:
-    | 'DRAFT'
-    | 'PENDING'
-    | 'APPROVED'
-    | 'DENIED'
-    | 'FINISHED'
-    | 'STARTING_TRIP'
-  tons_loaded: any
-  toll_cost: any
-  truck_km_end_trip: any
-  discharge: any
-  img_proof_cte: FreightFile
-  img_proof_ticket: FreightFile
-  img_proof_freight_letter: FreightFile
-  createdAt: Date
-  updatedAt: Date
-}
 
 export function useFreights() {
   const { data } = useFinancialStatement()

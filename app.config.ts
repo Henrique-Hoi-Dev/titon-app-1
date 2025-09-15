@@ -29,6 +29,8 @@ export default {
     plugins: [
       'expo-router',
       'expo-font',
+      'expo-sqlite',
+      'expo-web-browser',
       [
         'onesignal-expo-plugin',
         {

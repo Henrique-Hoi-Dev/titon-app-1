@@ -44,7 +44,7 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            yarn install --production=false && success=true && break
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -74,7 +74,7 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            yarn install --production=false && success=true && break
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -96,7 +96,7 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            yarn install --production=false && success=true && break
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -118,7 +118,7 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            yarn install --production=false && success=true && break
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -153,7 +153,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Install Expo & EAS
         run: |

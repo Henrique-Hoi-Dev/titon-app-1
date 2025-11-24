@@ -23,6 +23,8 @@ export type User = {
   percentage: number | null
   valid_cnh: boolean | null
   value_fix: number
+  email?: string | null
+  phone?: string | null
 }
 
 export type AuthResponse = {
@@ -51,70 +53,83 @@ export function AuthProvider(props: PropsWithChildren) {
   const [user, setUser] = useState<User>()
   const [token, setToken] = useState<string>()
   const [loading, setLoading] = useState<boolean>(false)
-  const router = useRouter()
 
-  const handleProfile = useCallback(async (token?: string | null) => {
-    setLoading(true)
-    try {
-      const response = await Api.get<ProfileResponse>('/v1/driver/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (response.status === 401) {
-        throw new Error('Unauthorized', {
-          cause: { status: 401 },
-        })
-      }
-
-      if (response.status !== 200) {
-        throw new Error('Invalid credentials')
-      }
-
-      if (response.data?.data) {
-        setUser(response.data.data)
-      }
-    } catch (error) {
-      if (error instanceof Error && error.cause?.status === 401) {
-        handleSignOut()
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  const handleSignIn = useCallback(async (email: string, password: string) => {
-    setLoading(true)
-    try {
-      const response = await Api.post<AuthResponse>('/v1/driver/signin', {
-        cpf: email,
-        password,
-      })
-
-      if (response.status !== 200) {
-        throw new Error('Invalid credentials')
-      }
-
-      if (response.data?.data) {
-        const {
-          data: { token },
-        } = response.data as unknown as AuthResponse
-
-        setToken(token)
-        handleProfile(token)
-      }
-    } catch (error) {
-      setLoading(false)
-    }
-  }, [])
-
+  // TODO: Centralize sign-out side effects and navigate to an auth route.
   const handleSignOut = useCallback(async () => {
     await AsyncStorage.removeItem(`@${config.appName}_token`)
     setToken(undefined)
     setUser(undefined)
     // router.replace('/sign-in')
-  }, [router])
+  }, [])
+
+  const handleProfile = useCallback(
+    async (token?: string | null) => {
+      setLoading(true)
+      try {
+        const response = await Api.get<ProfileResponse>('/v1/driver/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (response.status === 401) {
+          throw new Error('Unauthorized', {
+            cause: { status: 401 },
+          })
+        }
+
+        if (response.status !== 200) {
+          throw new Error('Invalid credentials')
+        }
+
+        if (response.data?.data) {
+          setUser(response.data.data)
+        }
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.cause &&
+          typeof error.cause === 'object' &&
+          'status' in error.cause &&
+          error.cause.status === 401
+        ) {
+          handleSignOut()
+        }
+      } finally {
+        setLoading(false)
+      }
+    },
+    [handleSignOut],
+  )
+
+  // TODO: Simplify sign-in flow by separating token persistence from profile fetching.
+  const handleSignIn = useCallback(
+    async (email: string, password: string) => {
+      setLoading(true)
+      try {
+        const response = await Api.post<AuthResponse>('/v1/driver/signin', {
+          cpf: email,
+          password,
+        })
+
+        if (response.status !== 200) {
+          throw new Error('Invalid credentials')
+        }
+
+        if (response.data?.data) {
+          const {
+            data: { token },
+          } = response.data as unknown as AuthResponse
+
+          setToken(token)
+          handleProfile(token)
+        }
+      } catch (error) {
+        setLoading(false)
+      }
+    },
+    [handleProfile],
+  )
 
   useEffect(() => {
     const bootstrapAsync = async () => {
@@ -138,15 +153,16 @@ export function AuthProvider(props: PropsWithChildren) {
     }
 
     bootstrapAsync()
-  }, [token])
+  }, [token, handleProfile])
 
   useEffect(() => {
-    if (user) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      OneSignal.initialize(config.oneSignalAppId[Platform.OS])
-      OneSignal.Notifications.requestPermission(true)
-    }
+    if (Platform.OS === 'web') return
+    if (!user) return
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    OneSignal.initialize(config.oneSignalAppId[Platform.OS])
+    OneSignal.Notifications.requestPermission(true)
 
     const listener = (event: UserChangedState) => {
       if (event.current.onesignalId) {

@@ -5,7 +5,6 @@ import { Pressable, ScrollView, Text, View } from 'react-native'
 import React, { useState } from 'react'
 import Card from '~/src/components/Card'
 import { Button, PasswordInput, TextInput } from '~/src/components/Form'
-import Divider from '~/src/components/Divider'
 import { useMutation } from '~/src/hooks/useMutation'
 import api from '~/src/services/api'
 
@@ -14,8 +13,8 @@ function AccountTab() {
   return (
     <Card>
       <TextInput label="Nome" editable={false} value={user?.name} />
-      <TextInput label="Celular" editable={false} />
-      <TextInput label="E-mail" editable={false} />
+      <TextInput label="Celular" editable={false} value={user?.phone || ''} />
+      <TextInput label="E-mail" editable={false} value={user?.email || ''} />
     </Card>
   )
 }
@@ -31,14 +30,6 @@ function SecurityTab() {
   })
   return (
     <>
-      <Card>
-        <TextInput
-          label="Senha atual"
-          editable={false}
-          placeholder="********"
-        />
-      </Card>
-      <Divider className="bg-zinc-400" />
       <Text className="text-base text-primary-500 my-4 text-center">
         Sua nova senha deve ser diferente da senha anterior
       </Text>

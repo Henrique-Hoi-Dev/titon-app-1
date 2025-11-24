@@ -1,16 +1,15 @@
-# 📱 Titon App - Aplicativo de Agendamento
+# 📱 Titon App
 
-Um aplicativo móvel moderno desenvolvido com **React Native** e **Expo** para agendamento de serviços e gerenciamento de usuários.
+Aplicativo móvel desenvolvido com **React Native** e **Expo** para gestão de viagens, despesas, depósitos e notificações de motoristas.
 
 ## 🚀 Tecnologias Utilizadas
 
 - **React Native** - Framework para desenvolvimento mobile
 - **Expo** - Plataforma para desenvolvimento React Native
-- **Redux** - Gerenciamento de estado da aplicação
-- **Redux Saga** - Middleware para operações assíncronas
-- **React Navigation** - Navegação entre telas
-- **Styled Components** - Estilização de componentes
-- **Axios** - Cliente HTTP para APIs
+- **Expo Router** - Navegação baseada em arquivos
+- **TypeScript**
+- **React Query** - Estado do servidor
+- **NativeWind / TailwindCSS** - Estilização
 - **AsyncStorage** - Armazenamento local
 - **Reactotron** - Debugging e monitoramento
 
@@ -18,11 +17,11 @@ Um aplicativo móvel moderno desenvolvido com **React Native** e **Expo** para a
 
 Antes de começar, certifique-se de ter instalado:
 
-- [Node.js](https://nodejs.org/) (versão 14 ou superior)
-- [npm](https://www.npmjs.com/) ou [Yarn](https://yarnpkg.com/)
-- [Expo CLI](https://docs.expo.dev/get-started/installation/)
-- [Android Studio](https://developer.android.com/studio) (para desenvolvimento Android)
-- [Xcode](https://developer.apple.com/xcode/) (para desenvolvimento iOS - apenas macOS)
+- [Node.js](https://nodejs.org/) (recomendado: 22.14.0)
+- [Yarn](https://yarnpkg.com/) (1.22.x)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/) (>= 10.2.1)
+- [Android Studio](https://developer.android.com/studio) (Android)
+- [Xcode](https://developer.apple.com/xcode/) (iOS, apenas macOS)
 
 ## 🛠️ Instalação
 
@@ -41,11 +40,9 @@ Antes de começar, certifique-se de ter instalado:
    npm install
    ```
 
-3. **Configure o ambiente**
-   ```bash
-   # Para iOS (apenas macOS)
-   cd ios && pod install && cd ..
-   ```
+3. **Configuração de ambientes**
+   Crie um arquivo `.env` na raiz do projeto (ou use o script `yarn setup`).
+   Um exemplo está disponível em `.env.example`.
 
 ## 🚀 Como Executar
 
@@ -72,14 +69,14 @@ Antes de começar, certifique-se de ter instalado:
    yarn web
    ```
 
-### Build de Produção
+### Build
+
+Recomendado via EAS:
 
 ```bash
-# Build para Android
-expo build:android
-
-# Build para iOS
-expo build:ios
+# Android/iOS (dev/staging/prod)
+eas build --profile development --platform android
+eas build --profile production --platform ios
 ```
 
 ## 📱 Funcionalidades
@@ -111,48 +108,32 @@ expo build:ios
 ## 🏗️ Estrutura do Projeto
 
 ```
+app/                     # Rotas (Expo Router)
 src/
 ├── components/          # Componentes reutilizáveis
-│   ├── Appointment/    # Componente de agendamento
-│   ├── Background/     # Componente de fundo
-│   ├── Button/         # Botões personalizados
-│   ├── DateInput/      # Input de data/hora
-│   └── Input/          # Campos de entrada
-├── pages/              # Telas da aplicação
-│   ├── Dashboard/      # Tela principal
-│   ├── New/            # Fluxo de agendamento
-│   ├── Profile/        # Perfil do usuário
-│   ├── SignIn/         # Tela de login
-│   └── SignUp/         # Tela de cadastro
-├── services/           # Serviços externos
-│   └── api.js         # Configuração da API
-├── store/              # Gerenciamento de estado
-│   ├── modules/        # Módulos do Redux
-│   │   ├── auth/       # Autenticação
-│   │   └── user/       # Usuário
-│   └── index.js        # Configuração da store
-└── routes.js           # Configuração de navegação
+├── context/             # Context API (auth, app, theme, feedback)
+├── hooks/               # Hooks customizados (React Query)
+├── services/            # API, client, upload
+├── types/               # Tipos (contratos)
+├── utils/               # Utilidades
+└── theme/               # Tema
 ```
 
-## 🔧 Configuração
+## 🔧 Configuração de Ambientes
 
-### Variáveis de Ambiente
-
-Crie um arquivo `.env` na raiz do projeto:
+Variáveis esperadas (ver `.env.example`):
 
 ```env
-API_URL=sua_url_da_api
-API_KEY=sua_chave_da_api
+EXPO_PUBLIC_APP_NAME=
+EXPO_PUBLIC_APP_TITLE=
+EXPO_PUBLIC_APP_ENV=development
+EXPO_PUBLIC_APP_API_ENV=development
+EXPO_PUBLIC_APP_URL=
+EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID=
+EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID=
 ```
 
-### Configuração do Expo
-
-O arquivo `app.json` contém as configurações principais:
-
-- **Nome**: Titon App
-- **Versão**: 1.0.0
-- **Orientação**: Portrait
-- **Plataformas**: iOS, Android, Web
+Observação: o Expo carrega apenas variáveis com prefixo `EXPO_PUBLIC_` no app.
 
 ## 📱 Compatibilidade
 
@@ -160,27 +141,26 @@ O arquivo `app.json` contém as configurações principais:
 - **Android**: 5.0+ (API 21+)
 - **Web**: Navegadores modernos
 
-## 🧪 Testes
+## 🧪 Qualidade
 
 ```bash
-# Executar testes
-yarn test
-
-# Executar testes em modo watch
-yarn test --watch
-
-# Executar linting
+# Lint
 yarn lint
+
+# Prettier
+yarn style:check
 ```
 
 ## 📦 Scripts Disponíveis
 
+- `yarn setup` - Configura ambiente local (.env, pods em macOS)
 - `yarn start` - Inicia o servidor de desenvolvimento
 - `yarn android` - Executa no Android
 - `yarn ios` - Executa no iOS
 - `yarn web` - Executa na web
 - `yarn test` - Executa os testes
 - `yarn lint` - Verifica o código
+- `yarn style:check` - Verifica formatação
 
 ## 🤝 Contribuição
 

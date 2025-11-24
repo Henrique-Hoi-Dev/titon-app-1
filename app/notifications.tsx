@@ -32,12 +32,27 @@ export default function Profile() {
             <Divider className="my-0 bg-zinc-200" />
           </View>
         }
+        ListFooterComponent={
+          notifications.isFetchingNextPage ? (
+            <View className="py-4 items-center">
+              <Text className="text-gray-500 text-sm">Carregando mais...</Text>
+            </View>
+          ) : null
+        }
         stickyHeaderIndices={[0]}
         renderItem={({ item }) => <Notification item={item} />}
         ItemSeparatorComponent={() => <Divider className="my-0 bg-zinc-200" />}
         keyExtractor={(item) => item.id.toString()}
-        refreshing={notifications.isFetching}
+        refreshing={
+          notifications.isFetching && !notifications.isFetchingNextPage
+        }
         onRefresh={notifications.refetch}
+        onEndReached={() => {
+          if (notifications.hasNextPage && !notifications.isFetchingNextPage) {
+            notifications.fetchNextPage()
+          }
+        }}
+        onEndReachedThreshold={0.5}
         removeClippedSubviews={false}
       />
     </Layout>

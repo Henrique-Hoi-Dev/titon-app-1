@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import { Button, MaskedInput, PasswordInput } from '~/src/components/Form'
 import { Formik } from 'formik'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { Masks } from 'react-native-mask-input'
 import Card from '~/src/components/Card'
@@ -23,7 +23,7 @@ interface IFormValues {
 
 export default function App() {
   const router = useRouter()
-  const { signIn, loading } = useAuth()
+  const { signIn, loading, user } = useAuth()
 
   const initialValues: IFormValues = {
     cpf: '',
@@ -38,6 +38,12 @@ export default function App() {
     },
     [signIn],
   )
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/home')
+    }
+  }, [user, router])
 
   return (
     <View

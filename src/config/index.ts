@@ -1,5 +1,26 @@
 import { z } from 'zod'
+import './skia'
+import { LogBox, Platform, StyleSheet } from 'react-native'
 
+// Declaração de tipo para globalThis com propriedades do Expo
+declare global {
+  // eslint-disable-next-line no-var
+  var __EXPO_DISABLE_LOGBOX: boolean | undefined
+}
+
+// Reduce noise from LogBox overlay on web dev; avoids state update warnings from overlay internals
+LogBox.ignoreAllLogs(true)
+if (Platform.OS === 'web') {
+  try {
+    globalThis.__EXPO_DISABLE_LOGBOX = true
+    // Required by NativeWind v4 to allow programmatic color scheme toggling on web
+    ;(
+      StyleSheet as unknown as { setFlag: (k: string, v: string) => void }
+    ).setFlag('darkMode', 'class')
+  } catch {}
+}
+
+// TODO: Move schema and env loading to a dedicated config module with caching and memoization.
 const envSchema = z
   .object({
     EXPO_PUBLIC_APP_NAME: z.string(),
@@ -23,12 +44,17 @@ const envSchema = z
     },
   }))
 
-export default envSchema.parse({
-  EXPO_PUBLIC_APP_NAME: 'logbook',
-  EXPO_PUBLIC_APP_TITLE: 'Logbook',
-  EXPO_PUBLIC_APP_ENV: 'production',
-  EXPO_PUBLIC_APP_API_ENV: 'production',
-  EXPO_PUBLIC_APP_URL: 'https://api-titon-1bfe49a9ae5d.herokuapp.com',
-  EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID: 'ae586d2b-2fa1-42ca-8996-dc9ee016197d',
-  EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID: '922828c4-6b80-4aae-b5fd-593c80efc423',
+// Load from process.env with safe fallbacks to current defaults
+const parsed = envSchema.parse({
+  EXPO_PUBLIC_APP_NAME: process.env.EXPO_PUBLIC_APP_NAME,
+  EXPO_PUBLIC_APP_TITLE: process.env.EXPO_PUBLIC_APP_TITLE,
+  EXPO_PUBLIC_APP_ENV: process.env.EXPO_PUBLIC_APP_ENV,
+  EXPO_PUBLIC_APP_API_ENV: process.env.EXPO_PUBLIC_APP_API_ENV,
+  EXPO_PUBLIC_APP_URL: process.env.EXPO_PUBLIC_APP_URL,
+  EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID:
+    process.env.EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID,
+  EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID:
+    process.env.EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID,
 })
+
+export default parsed

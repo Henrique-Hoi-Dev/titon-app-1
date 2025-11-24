@@ -7,6 +7,7 @@ import { enpointsWithoutAuth, getToken } from './api'
 import { ImagePickerAsset } from 'expo-image-picker'
 import Toast from 'react-native-toast-message'
 import { router } from 'expo-router'
+import { Platform } from 'react-native'
 
 const upload = async <T = unknown>(
   url: string,
@@ -32,20 +33,37 @@ const upload = async <T = unknown>(
 
     const formData = new FormData()
 
-    if (Array.isArray(files)) {
-      files.forEach((file) => {
-        formData.append(`${field}[]`, {
+    const appendFile = async (key: string, file: ImagePickerAsset) => {
+      const fileName =
+        file.fileName || file.uri.split('/').pop() || 'upload.jpg'
+      const mimeType = file.mimeType || 'application/octet-stream'
+
+      if (Platform.OS === 'web') {
+        // In web, FormData expects a File/Blob, not a { uri } object
+        const blob = await fetch(file.uri).then((r) => r.blob())
+        const webFile = new File([blob], fileName, { type: mimeType })
+        formData.append(key, webFile)
+      } else {
+        // Native accepts the { uri, name, type } object
+        formData.append(key, {
           uri: file.uri,
-          name: file.uri.split('/').pop(),
-          type: file.mimeType,
+          name: fileName,
+          type: mimeType,
         } as unknown as Blob)
-      })
+      }
+    }
+
+    if (Array.isArray(files)) {
+      for (const f of files) {
+        // Append as multiple parts with same field name (backend reads as array)
+        // Use "field" (not field[]) to match typical multer config
+        // If server expects field[], it still works; otherwise one per key
+        // Choose plain field for compatibility
+        // eslint-disable-next-line no-await-in-loop
+        await appendFile(field, f)
+      }
     } else {
-      formData.append(field, {
-        uri: files.uri,
-        name: files.uri.split('/').pop(),
-        type: files.mimeType,
-      } as unknown as Blob)
+      await appendFile(field, files)
     }
 
     if (parameters) {

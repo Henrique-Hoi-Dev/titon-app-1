@@ -1,12 +1,13 @@
 import { useLocalSearchParams } from 'expo-router'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { Header, Layout } from '~/src/components/Layout'
-import { Freight, useFreight } from '~/src/hooks/useFreight'
+import { Freight } from '~/src/types'
+import { useFreight } from '~/src/hooks/useFreight'
 import Abastecimentos from '~/src/components/Screens/Viagens/Abastecimentos'
 import Depositos from '~/src/components/Screens/Viagens/Depositos'
 import Despesas from '~/src/components/Screens/Viagens/Despesas'
 import Informacoes from '~/src/components/Screens/Viagens/Informacoes'
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Skeleton } from 'moti/skeleton'
 
 type Tab = {
@@ -61,7 +62,9 @@ export default function App() {
       <Header>
         <Skeleton show={shouldShow} colorMode="light">
           <Text className="text-2xl text-white -top-1.5">
-            {item?.end_freight_city || ''} / {item?.start_freight_city}
+            {[item?.end_freight_city, item?.start_freight_city]
+              .filter(Boolean)
+              .join(' / ')}
           </Text>
         </Skeleton>
       </Header>
@@ -97,14 +100,24 @@ export default function App() {
         ))}
       </ScrollView>
       <View className="flex-1">
-        {activeTab === 'informacoes' && (
+        {activeTab === 'informacoes' && item && (
           <Informacoes loading={!shouldShow} item={item as Freight} />
         )}
         {item && (
           <>
-            {activeTab === 'depositos' && <Depositos id={item.id} />}
-            {activeTab === 'despesas' && <Despesas id={item.id} />}
-            {activeTab === 'abastecimentos' && <Abastecimentos id={item.id} />}
+            {activeTab === 'depositos' && (
+              <Depositos id={item.id} items={item.deposits} freight={item} />
+            )}
+            {activeTab === 'despesas' && (
+              <Despesas id={item.id} items={item.travels} freight={item} />
+            )}
+            {activeTab === 'abastecimentos' && (
+              <Abastecimentos
+                id={item.id}
+                items={item.restocks}
+                freight={item}
+              />
+            )}
           </>
         )}
       </View>

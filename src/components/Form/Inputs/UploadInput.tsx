@@ -6,6 +6,28 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import upload from '~/src/services/upload'
 
+// Type guard para verificar se ImagePicker tem MediaTypeOptions
+type ImagePickerWithMediaType = typeof ImagePicker & {
+  MediaTypeOptions?: {
+    Images: ImagePicker.MediaTypeOptions
+  }
+  MediaType?: {
+    Images: ImagePicker.MediaType
+  }
+}
+
+// Helper para obter o valor padrão de mediaTypes de forma type-safe
+const getDefaultMediaTypes = ():
+  | ImagePicker.MediaTypeOptions
+  | ImagePicker.MediaType => {
+  const picker = ImagePicker as ImagePickerWithMediaType
+  const mediaType =
+    picker.MediaType?.Images ??
+    picker.MediaTypeOptions?.Images ??
+    ImagePicker.MediaTypeOptions.Images
+  return mediaType as ImagePicker.MediaTypeOptions | ImagePicker.MediaType
+}
+
 export type RenderInputProps = {
   loading: boolean
   file?: ImagePicker.ImagePickerAsset
@@ -16,7 +38,11 @@ export type UploadInputProps = {
   apiUrl?: string
   typeFile?: string
   automaticUpload?: boolean
-  mediaTypes?: ImagePicker.MediaTypeOptions
+  mediaTypes?:
+    | ImagePicker.MediaType
+    | ImagePicker.MediaType[]
+    | ImagePicker.MediaTypeOptions
+    | ImagePicker.MediaTypeOptions[]
   renderInput?: (props: RenderInputProps) => React.ReactNode
   onUploadStart?: () => void
   onUploadEnd?: () => void
@@ -36,7 +62,7 @@ function Upload(
     apiUrl,
     typeFile,
     automaticUpload = false,
-    mediaTypes = ImagePicker.MediaTypeOptions.Images,
+    mediaTypes = getDefaultMediaTypes(),
     renderInput,
     onUploadStart,
     onUploadEnd,
@@ -55,7 +81,11 @@ function Upload(
     setLoading(true)
     onPickStart?.()
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes,
+      mediaTypes: mediaTypes as
+        | ImagePicker.MediaType
+        | ImagePicker.MediaType[]
+        | ImagePicker.MediaTypeOptions
+        | undefined,
       aspect: [16, 9],
       quality: 1,
       allowsEditing: true,
@@ -83,14 +113,18 @@ function Upload(
     ref,
     () => ({
       upload: (id?: number) => {
-        if (file) {
-          return uploadImage.mutateAsync({ file, id })
+        if (!file) {
+          onError?.()
+          return
         }
-
-        throw new Error('Imagem não selecionada')
+        try {
+          return uploadImage.mutateAsync({ file, id })
+        } catch {
+          onError?.()
+        }
       },
     }),
-    [file, uploadImage],
+    [file, uploadImage, onError],
   )
 
   useEffect(() => {

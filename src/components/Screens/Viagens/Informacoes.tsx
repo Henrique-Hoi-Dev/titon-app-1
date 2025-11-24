@@ -11,7 +11,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
 import Button from '~/src/components/Button'
 import { router } from 'expo-router'
 import { Skeleton } from 'moti/skeleton'
-import { Freight } from '~/src/hooks/useFreight'
+import { Freight } from '~/src/types'
 import { useRestocks, useTravels } from '~/src/hooks'
 
 type Props = {
@@ -22,12 +22,15 @@ type Props = {
 export default function Informacoes({ item, loading = false }: Props) {
   const { width } = useWindowDimensions()
   const { user } = useAuth()
-  const { data: abastecimentos } = useRestocks(item?.id ?? 0)
+
+  // Só busca dados se o item existir e não estiver em loading
+  const shouldFetch = !loading && item?.id
+  const { data: abastecimentos } = useRestocks(shouldFetch ? item.id : 0)
   const totalAbastecimentos = abastecimentos?.reduce(
     (acc, curr) => acc + curr.total_value_fuel / 100,
     0,
   )
-  const { data: despesas } = useTravels(item?.id ?? 0)
+  const { data: despesas } = useTravels(shouldFetch ? item.id : 0)
   const totalDespesas = despesas?.reduce(
     (acc, curr) => acc + curr.value / 100,
     0,

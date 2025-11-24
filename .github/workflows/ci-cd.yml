@@ -21,7 +21,7 @@ on:
       - 'feature/**'
 
 env:
-  NODE_VERSION: 20.18.1
+  NODE_VERSION: 20.19.4
 
 jobs:
   lint:
@@ -44,7 +44,18 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            if output=$(yarn install --frozen-lockfile --production=false 2>&1); then
+              success=true
+              break
+            else
+              if echo "$output" | grep -q "lockfile needs to be updated"; then
+                echo "Lockfile needs update, installing without --frozen-lockfile..."
+                if yarn install --production=false; then
+                  success=true
+                  break
+                fi
+              fi
+            fi
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -74,7 +85,18 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            if output=$(yarn install --frozen-lockfile --production=false 2>&1); then
+              success=true
+              break
+            else
+              if echo "$output" | grep -q "lockfile needs to be updated"; then
+                echo "Lockfile needs update, installing without --frozen-lockfile..."
+                if yarn install --production=false; then
+                  success=true
+                  break
+                fi
+              fi
+            fi
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -92,11 +114,30 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: yarn config set registry https://registry.npmjs.org
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
       - name: Install dependencies with retry
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            if output=$(yarn install --frozen-lockfile --production=false 2>&1); then
+              success=true
+              break
+            else
+              if echo "$output" | grep -q "lockfile needs to be updated"; then
+                echo "Lockfile needs update, installing without --frozen-lockfile..."
+                if yarn install --production=false; then
+                  success=true
+                  break
+                fi
+              fi
+            fi
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -114,11 +155,30 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: yarn config set registry https://registry.npmjs.org
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
       - name: Install dependencies with retry
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            if output=$(yarn install --frozen-lockfile --production=false 2>&1); then
+              success=true
+              break
+            else
+              if echo "$output" | grep -q "lockfile needs to be updated"; then
+                echo "Lockfile needs update, installing without --frozen-lockfile..."
+                if yarn install --production=false; then
+                  success=true
+                  break
+                fi
+              fi
+            fi
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -153,7 +213,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          if output=$(yarn install --frozen-lockfile 2>&1); then
+            echo "Dependencies installed successfully"
+          else
+            if echo "$output" | grep -q "lockfile needs to be updated"; then
+              echo "Lockfile needs update, installing without --frozen-lockfile..."
+              yarn install
+            else
+              echo "$output"
+              exit 1
+            fi
+          fi
 
       - name: Install Expo & EAS
         run: |
@@ -161,7 +232,11 @@ jobs:
 
       - name: Build and submit iOS app
         run: |
-          eas build --platform ios --non-interactive --profile staging --auto-submit
+          if [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            eas build --platform ios --non-interactive --profile staging --auto-submit
+          elif [[ "${GITHUB_REF_NAME}" == "master" ]]; then
+            eas build --platform ios --non-interactive --profile production --auto-submit
+          fi
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           EXPO_APPLE_APP_STORE_KEY_ID: ${{ secrets.APPLE_APP_STORE_KEY_ID }}

@@ -3,60 +3,17 @@ import Api from '../services/api'
 import { toJsonBody } from '../utils/forms'
 import { useQuery } from '@tanstack/react-query'
 import { useMutation } from './useMutation'
-import { ErrorKey } from '../utils/errors'
-
-export declare type Travel = {
-  id: number
-  financial_statements_id: number
-  freight_id: number
-  city?: string
-  registration_date: Date
-  type_establishment: string
-  name_establishment: string
-  expense_description: string
-  dfe?: string
-  value: number
-  img_receipt?: Record<string, unknown>
-  payment?: Record<string, unknown>
-  createdAt: Date
-  updatedAt: Date
-}
-
-export type TravelsResponse = {
-  id: number
-  financialStatementsId: number
-  freightId: number
-  city?: string
-  registrationDate: string
-  typeEstablishment: string
-  nameEstablishment: string
-  expenseDescription: string
-  dfe?: string
-  value: number
-  imgReceipt?: Record<string, unknown>
-  payment?: Record<string, unknown>
-  createdAt: string
-  updatedAt: string
-}
-
-export type TravelsFetchResponse = {
-  data: {
-    docs: TravelsResponse[]
-  }
-}
-
-export type TravelErrorResponse = {
-  key: string
-}
+import {
+  Travel,
+  TravelsResponse,
+  TravelsFetchResponse,
+  TravelErrorResponse,
+  UseTravelsOptions,
+} from '../types'
 
 type StoreType = {
   freightId: number
   travel: Partial<DataToApiPost<Travel>>
-}
-
-export type UseTravelsOptions = {
-  onSuccess?: (data: TravelsResponse) => void
-  onError?: (key: ErrorKey) => void
 }
 
 export function useTravels(freightId: number, options?: UseTravelsOptions) {
@@ -74,7 +31,7 @@ export function useTravels(freightId: number, options?: UseTravelsOptions) {
         throw Error('Erro ao buscar os depósitos')
       }
 
-      return response.data.data.docs.map((item) => ({
+      return response.data.data.map((item) => ({
         ...item,
         id: item.id,
         financial_statements_id: item.financialStatementsId,

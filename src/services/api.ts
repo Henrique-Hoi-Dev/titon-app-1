@@ -17,6 +17,7 @@ export const getToken = async () => {
   return token
 }
 
+// TODO: Extract auth header injection and 401 handling into a reusable fetch wrapper/interceptor.
 export const Api = async <T = unknown>(
   method: Methods | Lowercase<Methods>,
   url: string,

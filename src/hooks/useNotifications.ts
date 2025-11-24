@@ -6,16 +6,21 @@ import { Response } from '../services/types'
 
 export type NotificationType = {
   id: number
+  title: string
   content: string
   read: boolean
-  created_at: Dayjs
+  createdAt: string
+  driverId: number
+  created_at?: Dayjs // Para compatibilidade interna
 }
 
 export type NotificationsResponse = {
-  total: number
-  totalPages: number
-  currentPage: number
-  data: NotificationType[]
+  data: {
+    total: number
+    totalPages: number
+    currentPage: number
+    docs: NotificationType[]
+  }
 }
 
 export default function useNotifications() {
@@ -31,15 +36,15 @@ export default function useNotifications() {
       )
 
       return {
-        ...response.data,
-        data: response.data.data.map((notification) => ({
+        ...response.data.data,
+        docs: response.data.data.docs.map((notification) => ({
           ...notification,
-          created_at: dayjs(notification.created_at),
+          created_at: dayjs(notification.createdAt || notification.created_at),
         })),
       }
     },
     getNextPageParam: (lastPage) => {
-      if (lastPage.currentPage !== lastPage.totalPages) {
+      if (lastPage.currentPage < lastPage.totalPages) {
         return lastPage.currentPage + 1
       }
 
@@ -74,11 +79,14 @@ export default function useNotifications() {
   })
 
   return {
-    data: notifications.data?.pages.flatMap((page) => page.data) ?? [],
+    data: notifications.data?.pages.flatMap((page) => page.docs) ?? [],
     isFetching: notifications.isFetching,
+    isFetchingNextPage: notifications.isFetchingNextPage,
+    hasNextPage: notifications.hasNextPage,
+    fetchNextPage: notifications.fetchNextPage,
     refetch: notifications.refetch,
     hasUnread: notifications.data?.pages.some((page) =>
-      page.data.some((notification) => !notification.read),
+      page.docs.some((notification) => !notification.read),
     ),
     onRead: async (id?: number) => await readMutation.mutateAsync(id),
   }

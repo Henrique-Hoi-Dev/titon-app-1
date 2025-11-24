@@ -3,7 +3,7 @@ const IS_DEV = process.env.EXPO_PUBLIC_APP_ENV !== 'production'
 export default {
   expo: {
     name: process.env.EXPO_PUBLIC_APP_TITLE,
-    slug: 'logbook',
+    slug: 'logbook-infra',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
@@ -44,10 +44,10 @@ export default {
         origin: false,
       },
       eas: {
-        projectId: '94aa1bba-c345-43a3-9939-67104de9fba0',
+        projectId: '49b65772-0600-4ab8-a516-be257057e11c',
       },
     },
-    owner: 'juliocavallari',
+    owner: 'logbook-infra',
     runtimeVersion: {
       policy: 'appVersion',
     },

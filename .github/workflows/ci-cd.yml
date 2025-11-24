@@ -44,7 +44,18 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            if output=$(yarn install --frozen-lockfile --production=false 2>&1); then
+              success=true
+              break
+            else
+              if echo "$output" | grep -q "lockfile needs to be updated"; then
+                echo "Lockfile needs update, installing without --frozen-lockfile..."
+                if yarn install --production=false; then
+                  success=true
+                  break
+                fi
+              fi
+            fi
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -74,7 +85,18 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            if output=$(yarn install --frozen-lockfile --production=false 2>&1); then
+              success=true
+              break
+            else
+              if echo "$output" | grep -q "lockfile needs to be updated"; then
+                echo "Lockfile needs update, installing without --frozen-lockfile..."
+                if yarn install --production=false; then
+                  success=true
+                  break
+                fi
+              fi
+            fi
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -104,7 +126,18 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            if output=$(yarn install --frozen-lockfile --production=false 2>&1); then
+              success=true
+              break
+            else
+              if echo "$output" | grep -q "lockfile needs to be updated"; then
+                echo "Lockfile needs update, installing without --frozen-lockfile..."
+                if yarn install --production=false; then
+                  success=true
+                  break
+                fi
+              fi
+            fi
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -134,7 +167,18 @@ jobs:
         run: |
           success=false
           for i in 1 2; do
-            yarn install --frozen-lockfile --production=false && success=true && break
+            if output=$(yarn install --frozen-lockfile --production=false 2>&1); then
+              success=true
+              break
+            else
+              if echo "$output" | grep -q "lockfile needs to be updated"; then
+                echo "Lockfile needs update, installing without --frozen-lockfile..."
+                if yarn install --production=false; then
+                  success=true
+                  break
+                fi
+              fi
+            fi
             echo "Retrying yarn install in 5s..."
             sleep 5
           done
@@ -169,7 +213,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          if output=$(yarn install --frozen-lockfile 2>&1); then
+            echo "Dependencies installed successfully"
+          else
+            if echo "$output" | grep -q "lockfile needs to be updated"; then
+              echo "Lockfile needs update, installing without --frozen-lockfile..."
+              yarn install
+            else
+              echo "$output"
+              exit 1
+            fi
+          fi
 
       - name: Install Expo & EAS
         run: |

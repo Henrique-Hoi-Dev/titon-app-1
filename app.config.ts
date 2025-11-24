@@ -47,7 +47,7 @@ export default {
         projectId: 'c89d0a1b-eaba-4e67-9087-d8a01c94c0e1',
       },
     },
-    owner: 'logbook-infra',
+    owner: 'henrique92',
     runtimeVersion: {
       policy: 'appVersion',
     },

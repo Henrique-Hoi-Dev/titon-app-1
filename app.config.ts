@@ -1,6 +1,8 @@
 const IS_DEV = process.env.EXPO_PUBLIC_APP_ENV !== 'production'
 
-const ONE_SIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID
+const ONE_SIGNAL_IOS_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID
+const ONE_SIGNAL_ANDROID_APP_ID =
+  process.env.EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID
 
 export default {
   expo: {
@@ -38,8 +40,6 @@ export default {
         'onesignal-expo-plugin',
         {
           mode: IS_DEV ? 'development' : 'production',
-          devAppId: ONE_SIGNAL_APP_ID,
-          prodAppId: ONE_SIGNAL_APP_ID,
         },
       ],
     ],
@@ -52,6 +52,10 @@ export default {
       },
       eas: {
         projectId: 'c89d0a1b-eaba-4e67-9087-d8a01c94c0e1',
+      },
+      oneSignalAppId: {
+        ios: ONE_SIGNAL_IOS_APP_ID,
+        android: ONE_SIGNAL_ANDROID_APP_ID,
       },
     },
     owner: 'henrique92',

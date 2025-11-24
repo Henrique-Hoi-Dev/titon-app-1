@@ -96,7 +96,7 @@ export const Api = async <T = unknown>(
     const response = await fetch(fullUrl, config)
 
     if (response.status === 401 && !shouldntHaveAuth) {
-      await AsyncStorage.removeItem(`${Config.appName}_token`)
+      await AsyncStorage.removeItem(`@${Config.appName}_token`)
       // Toast.show({
       //   type: 'error',
       //   text1: 'Sessão expirada',

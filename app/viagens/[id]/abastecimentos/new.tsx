@@ -65,7 +65,7 @@ export default function App() {
   const [image, setImage] = useState<ImagePickerAsset>()
   const [picking, setPicking] = useState(false)
   const uploadInvoice = useUpload({
-    apiUrl: `/v1/driver/deposit/upload-documents`,
+    apiUrl: `/v1/driver/restock/upload-documents`,
     onError: () => {
       Toast.show({
         type: 'error',

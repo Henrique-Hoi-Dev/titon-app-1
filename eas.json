@@ -18,9 +18,6 @@
     "staging": {
       "extends": "base",
       "distribution": "internal",
-      "ios": {
-        "buildType": "app-store"
-      },
       "android": {
         "buildType": "app-bundle"
       }
@@ -31,9 +28,6 @@
       "distribution": "store",
       "android": {
         "buildType": "app-bundle"
-      },
-      "ios": {
-        "buildType": "app-store"
       }
     }
   },

@@ -1,5 +1,6 @@
 import { Portal } from '@gorhom/portal'
-import { Canvas, LinearGradient, Rect, vec } from '@shopify/react-native-skia'
+import { LinearGradient, Rect, vec } from '~/src/vendor/skia'
+import { SkiaCanvasWrapper } from '~/src/components/SkiaCanvas'
 import {
   Image,
   ScrollView,
@@ -49,7 +50,7 @@ export default function Feedback({
   return (
     <Portal>
       <Layout className="items-center w-full h-full bg-zinc-100 ">
-        <Canvas
+        <SkiaCanvasWrapper
           style={{
             flex: 1,
             width: gradientWidth,
@@ -63,7 +64,7 @@ export default function Feedback({
               colors={['#0C59BB', '#8750FB']}
             />
           </Rect>
-        </Canvas>
+        </SkiaCanvasWrapper>
         <View
           style={{
             width: gradientWidth,

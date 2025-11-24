@@ -1,14 +1,19 @@
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useFormik } from 'formik'
 import { ScrollView, Text, View } from 'react-native'
 import { Masks } from 'react-native-mask-input'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Stringable } from '~/src/@types/utils'
 import Card from '~/src/components/Card'
 import { Button, MaskedInput } from '~/src/components/Form'
 import { Header, Layout } from '~/src/components/Layout'
-import { Freight, useFreight } from '~/src/hooks/useFreight'
+import { Freight } from '~/src/types'
+import { useFreight } from '~/src/hooks/useFreight'
 import { numberMask } from '~/src/utils/forms'
+import api from '~/src/services/api'
+import { useEffect } from 'react'
+import Toast from 'react-native-toast-message'
 
 type RouteParams = {
   id: string
@@ -16,10 +21,84 @@ type RouteParams = {
 
 export default function App() {
   const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const queryClient = useQueryClient()
   const { id } = useLocalSearchParams<RouteParams>()
   const { data: item } = useFreight(Number(id))
 
-  const { values, handleChange } = useFormik<
+  const mutation = useMutation({
+    mutationFn: async (values: {
+      tons_loaded?: string
+      toll_cost?: string
+      discharge?: string
+    }) => {
+      const payload: {
+        tons_loaded?: number
+        toll_cost?: number
+        discharge?: number
+      } = {}
+
+      // Sempre envia tons_loaded se tiver valor (campo obrigatório)
+      if (values.tons_loaded && values.tons_loaded.trim() !== '') {
+        const tonsValue = Number(
+          values.tons_loaded.replace(/\D/g, '').replace(',', '.'),
+        )
+        if (!isNaN(tonsValue) && tonsValue > 0) {
+          payload.tons_loaded = tonsValue
+        }
+      }
+
+      // Envia toll_cost se tiver valor
+      if (values.toll_cost && values.toll_cost.trim() !== '') {
+        const tollValue = Number(values.toll_cost.replace(/\D/g, '')) / 100
+        if (!isNaN(tollValue)) {
+          payload.toll_cost = tollValue
+        }
+      }
+
+      // Envia discharge se tiver valor
+      if (values.discharge && values.discharge.trim() !== '') {
+        const dischargeValue = Number(values.discharge.replace(/\D/g, '')) / 100
+        if (!isNaN(dischargeValue)) {
+          payload.discharge = dischargeValue
+        }
+      }
+
+      if (Object.keys(payload).length === 0) {
+        throw new Error('Preencha pelo menos o peso entregue')
+      }
+
+      const response = await api.put<{ data: Freight }>(
+        `/v1/driver/freight/${id}`,
+        payload,
+      )
+
+      if (response.status !== 200) {
+        throw new Error('Erro ao atualizar detalhes da carga')
+      }
+
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['freight', Number(id)] })
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso',
+        text2: 'Detalhes da carga atualizados com sucesso',
+      })
+      router.back()
+    },
+    onError: (error: Error) => {
+      console.error('Erro ao atualizar freight:', error)
+      Toast.show({
+        type: 'error',
+        text1: 'Erro',
+        text2: error.message || 'Erro ao atualizar detalhes da carga',
+      })
+    },
+  })
+
+  const { values, handleChange, handleSubmit, setFieldValue } = useFormik<
     Partial<
       Stringable<
         Freight,
@@ -32,14 +111,42 @@ export default function App() {
       >
     >
   >({
+    enableReinitialize: true,
     initialValues: {
-      tons_loaded: item?.tons_loaded?.toString(),
-      toll_value: item?.toll_value?.toString(),
+      tons_loaded: item?.tons_loaded?.toString() || '',
+      toll_cost: item?.toll_cost
+        ? (item.toll_cost * 100).toFixed(2).replace('.', ',')
+        : '',
+      discharge: item?.discharge
+        ? (item.discharge * 100).toFixed(2).replace('.', ',')
+        : '',
     },
-    onSubmit: () => {
-      //
+    onSubmit: async (values) => {
+      await mutation.mutateAsync({
+        tons_loaded: values.tons_loaded,
+        toll_cost: values.toll_cost,
+        discharge: values.discharge,
+      })
     },
   })
+
+  useEffect(() => {
+    if (item) {
+      setFieldValue('tons_loaded', item.tons_loaded?.toString() || '')
+      setFieldValue(
+        'toll_cost',
+        item.toll_cost
+          ? (item.toll_cost * 100).toFixed(2).replace('.', ',')
+          : '',
+      )
+      setFieldValue(
+        'discharge',
+        item.discharge
+          ? (item.discharge * 100).toFixed(2).replace('.', ',')
+          : '',
+      )
+    }
+  }, [item, setFieldValue])
 
   return (
     <Layout
@@ -71,8 +178,8 @@ export default function App() {
           <MaskedInput
             mask={Masks.BRL_CURRENCY}
             label="Pedágio incluso"
-            value={values.toll_value}
-            onChangeText={handleChange('toll_value')}
+            value={values.toll_cost}
+            onChangeText={handleChange('toll_cost')}
           />
           <View className="flex-row items-center gap-x-4">
             <View className="flex-1">
@@ -115,7 +222,13 @@ export default function App() {
             <Text className="mt-2 font-semibold ">R$/ton</Text>
           </View>
         </Card>
-        <Button>Continuar</Button>
+        <Button
+          loading={mutation.isPending}
+          onPress={() => handleSubmit()}
+          disabled={!values.tons_loaded}
+        >
+          Salvar
+        </Button>
       </ScrollView>
     </Layout>
   )

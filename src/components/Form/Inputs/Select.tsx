@@ -5,12 +5,13 @@ import {
   Pressable,
   ActivityIndicator,
   useWindowDimensions,
+  Platform,
+  TextInput as RNTextInput,
 } from 'react-native'
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetFlatListMethods,
-  BottomSheetTextInput,
 } from '@gorhom/bottom-sheet'
 import _ from 'lodash'
 import { Portal } from '@gorhom/portal'
@@ -40,9 +41,7 @@ export type SelectProps<T> = {
   error?: string
 }
 
-const AnimatedMaterialCommunityIcons = Animated.createAnimatedComponent(
-  MaterialCommunityIcons,
-)
+// Avoid animating the icon component directly on web to prevent setNativeProps errors
 
 export default function Select<T>({
   required,
@@ -176,12 +175,13 @@ export default function Select<T>({
                     ref?.current?.expand()
                   }}
                 >
-                  <AnimatedMaterialCommunityIcons
-                    style={animatedStyles}
-                    name={'chevron-down'}
-                    size={20}
-                    color={isFocused ? '#444' : '#BBB'}
-                  />
+                  <Animated.View style={animatedStyles}>
+                    <MaterialCommunityIcons
+                      name={'chevron-down'}
+                      size={20}
+                      color={isFocused ? '#444' : '#BBB'}
+                    />
+                  </Animated.View>
                 </Pressable>
               </View>
             )}
@@ -235,12 +235,23 @@ export default function Select<T>({
                 color="#BBB"
                 style={{ marginRight: 8 }}
               />
-              <BottomSheetTextInput
-                placeholder="Pesquisar"
-                className="w-full text-gray-900"
-                onChangeText={setSearch}
-                value={search}
-              />
+              {Platform.OS === 'web' ? (
+                <RNTextInput
+                  placeholder="Pesquisar"
+                  className="w-full text-gray-900"
+                  onChangeText={setSearch}
+                  value={search}
+                />
+              ) : (
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore - only available on native
+                <BottomSheet.TextInput
+                  placeholder="Pesquisar"
+                  className="w-full text-gray-900"
+                  onChangeText={setSearch}
+                  value={search}
+                />
+              )}
             </View>
           )}
           <BottomSheetFlatList

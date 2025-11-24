@@ -67,10 +67,7 @@ export default function BottomTab(): JSX.Element | null {
 
   return (
     <Portal>
-      <Animated.View
-        style={[style]}
-        className="absolute flex-row bg-transparent"
-      >
+      <Animated.View style={style} className="absolute flex-row bg-transparent">
         <SafeAreaView
           edges={['bottom']}
           className="bg-white  flex-row justify-around items-center pt-4 pb-6 w-[100%] rounded-t-2xl px-4"

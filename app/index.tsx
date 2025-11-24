@@ -25,7 +25,7 @@ export default function Splashscreen() {
     if (!user && !token) {
       router.replace('/sign-in')
     }
-  }, [token, user, router])
+  }, [token, user, router, getUser])
 
   useEffect(() => {
     onLayoutRootView()

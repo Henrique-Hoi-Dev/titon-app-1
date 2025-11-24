@@ -1,6 +1,7 @@
 import { SectionList, Text, useWindowDimensions, View } from 'react-native'
 import { Masks, formatWithMask } from 'react-native-mask-input'
 import { useTravels } from '~/src/hooks/useTravels'
+import type { Travel, Freight } from '~/src/types'
 // import { banks } from '~/src/utils/forms'
 import Card from '../../Card'
 import _ from 'lodash'
@@ -8,16 +9,23 @@ import moment from 'moment'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import Button from '../../Button'
-import { useFreight } from '~/src/hooks'
 
-export default function Despesas({ id }: { id: number }) {
+export default function Despesas({
+  id,
+  items,
+  freight,
+}: {
+  id: number
+  items?: Travel[]
+  freight: Freight
+}) {
   const { width } = useWindowDimensions()
-  const { data: freight } = useFreight(id)
-  const { data, loading, fetch: getTravels } = useTravels(id)
+  const fetchId = items ? 0 : id
+  const { data } = useTravels(fetchId)
 
   const groupedByCreatedAt = Object.values(
     _.groupBy(
-      data
+      (items ?? data)
         ?.sort((a, b) => {
           return b.createdAt.getTime() - a.createdAt.getTime()
         })
@@ -59,7 +67,7 @@ export default function Despesas({ id }: { id: number }) {
               -
               {
                 formatWithMask({
-                  text: data
+                  text: (items ?? data)
                     ?.reduce((acc, cur) => acc + (cur.value ?? 0), 0)
                     .toString(),
                   mask: Masks.BRL_CURRENCY,
@@ -71,8 +79,8 @@ export default function Despesas({ id }: { id: number }) {
       </View>
       <SectionList
         sections={groupedByCreatedAt}
-        onRefresh={getTravels}
-        refreshing={loading}
+        onRefresh={undefined}
+        refreshing={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 48 }}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (

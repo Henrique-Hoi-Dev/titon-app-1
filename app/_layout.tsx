@@ -1,4 +1,6 @@
 import 'react-native-get-random-values'
+import '~/src/styles/global.css'
+import '~/src/config'
 import { Stack } from 'expo-router'
 import { PortalHost, PortalProvider } from '@gorhom/portal'
 import { AuthProvider } from '~/src/context/auth'

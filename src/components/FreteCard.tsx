@@ -1,8 +1,8 @@
 import { View, Text } from 'react-native'
-import React from 'react'
 import { useRouter } from 'expo-router'
 import IconButton from './IconButton'
-import { Freight, useFreights } from '../hooks'
+import { Freight } from '../types'
+import { useFreights } from '../hooks'
 import Button from './Button'
 
 export type FreteCardProps = {
@@ -55,7 +55,12 @@ export default function FreteCard({ item, index }: FreteCardProps) {
                 color="#1757D4"
                 icon="chevron-right"
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                onPress={() => router.navigate(`/viagens/${item.id}/`)}
+                onPress={() =>
+                  router.navigate({
+                    pathname: '/viagens/[id]',
+                    params: { id: String(item.id) },
+                  })
+                }
                 size={28}
               />
             </View>

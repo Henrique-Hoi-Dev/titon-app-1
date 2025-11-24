@@ -29,6 +29,6 @@ jobs:
           fi
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-          APPLE_APP_STORE_KEY_ID: ${{ secrets.APPLE_APP_STORE_KEY_ID }}
-          APPLE_APP_STORE_ISSUER_ID: ${{ secrets.APPLE_APP_STORE_ISSUER_ID }}
-          APPLE_APP_STORE_KEY_CONTENT: ${{ secrets.APPLE_APP_STORE_KEY_CONTENT }}
+          EXPO_APPLE_APP_STORE_KEY_ID: ${{ secrets.APPLE_APP_STORE_KEY_ID }}
+          EXPO_APPLE_APP_STORE_ISSUER_ID: ${{ secrets.APPLE_APP_STORE_ISSUER_ID }}
+          EXPO_APPLE_APP_STORE_KEY: ${{ secrets.APPLE_APP_STORE_KEY_CONTENT }}

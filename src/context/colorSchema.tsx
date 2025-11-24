@@ -1,14 +1,14 @@
 import {
   Image,
-  Canvas,
   mix,
   vec,
   ImageShader,
   Circle,
   dist,
   makeImageFromView,
-} from '@shopify/react-native-skia'
-import type { SkImage } from '@shopify/react-native-skia'
+} from '~/src/vendor/skia'
+import { SkiaCanvasWrapper } from '~/src/components/SkiaCanvas'
+import type { SkImage } from '~/src/vendor/skia'
 import { StatusBar } from 'expo-status-bar'
 import type { ReactNode, RefObject } from 'react'
 import {
@@ -184,7 +184,7 @@ export const ColorSchemeProvider = ({ children }: ColorSchemeProviderProps) => {
         </ColorSchemeContext.Provider>
       </View>
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <Canvas className="w-full h-full">
+        <SkiaCanvasWrapper className="w-full h-full">
           {overlay1 && (
             <Image image={overlay1} x={0} y={0} width={width} height={height} />
           )}
@@ -200,7 +200,7 @@ export const ColorSchemeProvider = ({ children }: ColorSchemeProviderProps) => {
               />
             </Circle>
           )}
-        </Canvas>
+        </SkiaCanvasWrapper>
       </View>
     </GestureHandlerRootView>
   )

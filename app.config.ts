@@ -1,5 +1,9 @@
 const IS_DEV = process.env.EXPO_PUBLIC_APP_ENV !== 'production'
 
+const ONE_SIGNAL_IOS_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID
+const ONE_SIGNAL_ANDROID_APP_ID =
+  process.env.EXPO_PUBLIC_ONESIGNAL_ANDROID_APP_ID
+
 export default {
   expo: {
     name: process.env.EXPO_PUBLIC_APP_TITLE,
@@ -18,6 +22,9 @@ export default {
     ios: {
       supportsTablet: false,
       bundleIdentifier: 'br.com.logbook.app',
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
       adaptiveIcon: {
@@ -45,6 +52,10 @@ export default {
       },
       eas: {
         projectId: 'c89d0a1b-eaba-4e67-9087-d8a01c94c0e1',
+      },
+      oneSignalAppId: {
+        ios: ONE_SIGNAL_IOS_APP_ID,
+        android: ONE_SIGNAL_ANDROID_APP_ID,
       },
     },
     owner: 'henrique92',

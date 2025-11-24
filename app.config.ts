@@ -3,7 +3,7 @@ const IS_DEV = process.env.EXPO_PUBLIC_APP_ENV !== 'production'
 export default {
   expo: {
     name: process.env.EXPO_PUBLIC_APP_TITLE,
-    slug: 'logbook-infra',
+    slug: 'titon-app',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/images/icon.png',

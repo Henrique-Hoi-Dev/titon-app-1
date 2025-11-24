@@ -10,7 +10,11 @@ import { Button, MaskedInput } from '~/src/components/Form'
 import { Header, Layout } from '~/src/components/Layout'
 import { Freight } from '~/src/types'
 import { useFreight } from '~/src/hooks/useFreight'
-import { numberMask } from '~/src/utils/forms'
+import {
+  numberMask,
+  centsToMaskValue,
+  maskValueToCents,
+} from '~/src/utils/forms'
 import api from '~/src/services/api'
 import { useEffect } from 'react'
 import Toast from 'react-native-toast-message'
@@ -48,18 +52,18 @@ export default function App() {
         }
       }
 
-      // Envia toll_cost se tiver valor
+      // Envia toll_cost se tiver valor (já em centavos)
       if (values.toll_cost && values.toll_cost.trim() !== '') {
-        const tollValue = Number(values.toll_cost.replace(/\D/g, '')) / 100
-        if (!isNaN(tollValue)) {
+        const tollValue = maskValueToCents(values.toll_cost)
+        if (tollValue > 0) {
           payload.toll_cost = tollValue
         }
       }
 
-      // Envia discharge se tiver valor
+      // Envia discharge se tiver valor (já em centavos)
       if (values.discharge && values.discharge.trim() !== '') {
-        const dischargeValue = Number(values.discharge.replace(/\D/g, '')) / 100
-        if (!isNaN(dischargeValue)) {
+        const dischargeValue = maskValueToCents(values.discharge)
+        if (dischargeValue > 0) {
           payload.discharge = dischargeValue
         }
       }
@@ -114,12 +118,8 @@ export default function App() {
     enableReinitialize: true,
     initialValues: {
       tons_loaded: item?.tons_loaded?.toString() || '',
-      toll_cost: item?.toll_cost
-        ? (item.toll_cost * 100).toFixed(2).replace('.', ',')
-        : '',
-      discharge: item?.discharge
-        ? (item.discharge * 100).toFixed(2).replace('.', ',')
-        : '',
+      toll_cost: centsToMaskValue(item?.toll_cost),
+      discharge: centsToMaskValue(item?.discharge),
     },
     onSubmit: async (values) => {
       await mutation.mutateAsync({
@@ -133,18 +133,8 @@ export default function App() {
   useEffect(() => {
     if (item) {
       setFieldValue('tons_loaded', item.tons_loaded?.toString() || '')
-      setFieldValue(
-        'toll_cost',
-        item.toll_cost
-          ? (item.toll_cost * 100).toFixed(2).replace('.', ',')
-          : '',
-      )
-      setFieldValue(
-        'discharge',
-        item.discharge
-          ? (item.discharge * 100).toFixed(2).replace('.', ',')
-          : '',
-      )
+      setFieldValue('toll_cost', centsToMaskValue(item.toll_cost))
+      setFieldValue('discharge', centsToMaskValue(item.discharge))
     }
   }, [item, setFieldValue])
 

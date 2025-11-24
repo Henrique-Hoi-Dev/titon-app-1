@@ -44,7 +44,7 @@ export default {
         origin: false,
       },
       eas: {
-        projectId: '49b65772-0600-4ab8-a516-be257057e11c',
+        projectId: 'c89d0a1b-eaba-4e67-9087-d8a01c94c0e1',
       },
     },
     owner: 'logbook-infra',

@@ -117,3 +117,32 @@ export const numberMask = createNumberMask({
   separator: ',',
   precision: 0,
 })
+
+/**
+ * Converte centavos (número do backend) para string formatada para MaskedInput BRL_CURRENCY
+ * @param cents - Valor em centavos (ex: 3000 = R$ 30,00)
+ * @returns String com o valor em centavos para a máscara (ex: "3000")
+ */
+export const centsToMaskValue = (cents: number | null | undefined): string => {
+  if (cents === null || cents === undefined || isNaN(cents)) {
+    return ''
+  }
+  return Math.round(cents).toString()
+}
+
+/**
+ * Converte valor formatado do MaskedInput BRL_CURRENCY para centavos (número para backend)
+ * @param maskedValue - Valor formatado da máscara (ex: "R$ 30,00" ou "3000")
+ * @returns Número em centavos (ex: 3000)
+ */
+export const maskValueToCents = (
+  maskedValue: string | null | undefined,
+): number => {
+  if (!maskedValue || maskedValue.trim() === '') {
+    return 0
+  }
+  // Remove todos os caracteres não numéricos (R$, espaços, vírgulas, pontos)
+  const digitsOnly = maskedValue.replace(/\D/g, '')
+  const cents = Number(digitsOnly)
+  return isNaN(cents) ? 0 : cents
+}

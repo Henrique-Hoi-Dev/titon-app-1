@@ -200,7 +200,7 @@ jobs:
     steps:
       - run: echo "✔️ Código validado com sucesso"
 
-  deploy:
+  build-ios:
     needs: check-code-quality
     if: github.event_name == 'push' && contains('refs/heads/staging,refs/heads/master', github.ref)
     runs-on: ubuntu-latest
@@ -230,12 +230,52 @@ jobs:
         run: |
           npm install -g expo-cli eas-cli
 
-      - name: Build and submit iOS app
+      - name: Build iOS app
         run: |
           if [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
-            eas build --platform ios --non-interactive --profile staging --auto-submit
+            eas build --platform ios --non-interactive --profile staging
           elif [[ "${GITHUB_REF_NAME}" == "master" ]]; then
-            eas build --platform ios --non-interactive --profile production --auto-submit
+            eas build --platform ios --non-interactive --profile production
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+  deploy:
+    needs: build-ios
+    if: github.event_name == 'push' && contains('refs/heads/staging,refs/heads/master', github.ref)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          if output=$(yarn install --frozen-lockfile 2>&1); then
+            echo "Dependencies installed successfully"
+          else
+            if echo "$output" | grep -q "lockfile needs to be updated"; then
+              echo "Lockfile needs update, installing without --frozen-lockfile..."
+              yarn install
+            else
+              echo "$output"
+              exit 1
+            fi
+          fi
+
+      - name: Install Expo & EAS
+        run: |
+          npm install -g expo-cli eas-cli
+
+      - name: Submit iOS app to Apple Store
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            eas submit --platform ios --non-interactive --profile staging
+          elif [[ "${GITHUB_REF_NAME}" == "master" ]]; then
+            eas submit --platform ios --non-interactive --profile production
           fi
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -244,7 +284,7 @@ jobs:
           EXPO_APPLE_APP_STORE_KEY: ${{ secrets.APPLE_APP_STORE_KEY_CONTENT }}
 
   notify-discord:
-    needs: [lint, style, test, build, check-code-quality, deploy]
+    needs: [lint, style, test, build, check-code-quality, build-ios, deploy]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -281,6 +321,7 @@ jobs:
             echo "- 🧪 Test: $(format_status '${{ needs.test.result }}')"
             echo "- 🏗️ Build: $(format_status '${{ needs.build.result }}')"
             echo "- ✅ Code Quality: $(format_status '${{ needs.check-code-quality.result }}')"
+            echo "- 📱 Build iOS: $(format_status '${{ needs.build-ios.result || 'skipped' }}')"
             echo "- 🚀 Deploy: $(format_status '${{ needs.deploy.result || 'skipped' }}')"
             echo "👉 [Ver execução](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
           } > message.txt

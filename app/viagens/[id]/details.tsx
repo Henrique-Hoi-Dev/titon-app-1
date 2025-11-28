@@ -107,33 +107,33 @@ export default function App() {
       Stringable<
         Freight,
         | 'id'
-        | 'financial_statements_id'
+        | 'financialStatementsId'
         | 'createdAt'
         | 'updatedAt'
         | 'status'
-        | 'is_on_the_way'
+        | 'isOnTheWay'
       >
     >
   >({
     enableReinitialize: true,
     initialValues: {
-      tons_loaded: item?.tonsLoaded?.toString() || '',
-      toll_cost: centsToMaskValue(item?.tollCost),
+      tonsLoaded: item?.tonsLoaded?.toString() || '',
+      tollCost: centsToMaskValue(item?.tollCost),
       discharge: centsToMaskValue(item?.discharge),
     },
     onSubmit: async (values) => {
       await mutation.mutateAsync({
-        tons_loaded: values.tons_loaded,
-        toll_cost: values.toll_cost,
-        discharge: values.discharge,
+        tons_loaded: values.tonsLoaded || '',
+        toll_cost: values.tollCost || '',
+        discharge: values.discharge || '',
       })
     },
   })
 
   useEffect(() => {
     if (item) {
-      setFieldValue('tons_loaded', item.tonsLoaded?.toString() || '')
-      setFieldValue('toll_cost', centsToMaskValue(item.tollCost))
+      setFieldValue('tonsLoaded', item.tonsLoaded?.toString() || '')
+      setFieldValue('tollCost', centsToMaskValue(item.tollCost))
       setFieldValue('discharge', centsToMaskValue(item.discharge))
     }
   }, [item, setFieldValue])
@@ -158,7 +158,9 @@ export default function App() {
               {item.contractorName && (
                 <View className="flex-1 min-w-[45%]">
                   <Text className="text-xs text-gray-500">Transportadora</Text>
-                  <Text className="text-sm font-medium">{item.contractorName}</Text>
+                  <Text className="text-sm font-medium">
+                    {item.contractorName}
+                  </Text>
                 </View>
               )}
               {item.estimatedTonnage && (
@@ -175,7 +177,9 @@ export default function App() {
               )}
               {item.tonValue && (
                 <View className="flex-1 min-w-[45%]">
-                  <Text className="text-xs text-gray-500">Preço por tonelada</Text>
+                  <Text className="text-xs text-gray-500">
+                    Preço por tonelada
+                  </Text>
                   <Text className="text-sm font-medium">
                     R${' '}
                     {(item.tonValue / 100).toLocaleString('pt-BR', {
@@ -199,7 +203,9 @@ export default function App() {
               )}
               {item.fuelAvgPerKm && (
                 <View className="flex-1 min-w-[45%]">
-                  <Text className="text-xs text-gray-500">Média do caminhão</Text>
+                  <Text className="text-xs text-gray-500">
+                    Média do caminhão
+                  </Text>
                   <Text className="text-sm font-medium">
                     {item.fuelAvgPerKm} km/l
                   </Text>
@@ -216,31 +222,41 @@ export default function App() {
               {item.truckLocation && (
                 <View className="flex-1 min-w-[45%]">
                   <Text className="text-xs text-gray-500">Localização</Text>
-                  <Text className="text-sm font-medium">{item.truckLocation}</Text>
+                  <Text className="text-sm font-medium">
+                    {item.truckLocation}
+                  </Text>
                 </View>
               )}
               {item.routeDistanceKm && (
                 <View className="flex-1 min-w-[45%]">
                   <Text className="text-xs text-gray-500">Distância</Text>
-                  <Text className="text-sm font-medium">{item.routeDistanceKm}</Text>
+                  <Text className="text-sm font-medium">
+                    {item.routeDistanceKm}
+                  </Text>
                 </View>
               )}
               {item.routeDuration && (
                 <View className="flex-1 min-w-[45%]">
                   <Text className="text-xs text-gray-500">Duração</Text>
-                  <Text className="text-sm font-medium">{item.routeDuration}</Text>
+                  <Text className="text-sm font-medium">
+                    {item.routeDuration}
+                  </Text>
                 </View>
               )}
               {item.startFreightCity && (
                 <View className="flex-1 min-w-[45%]">
                   <Text className="text-xs text-gray-500">Origem</Text>
-                  <Text className="text-sm font-medium">{item.startFreightCity}</Text>
+                  <Text className="text-sm font-medium">
+                    {item.startFreightCity}
+                  </Text>
                 </View>
               )}
               {item.endFreightCity && (
                 <View className="flex-1 min-w-[45%]">
                   <Text className="text-xs text-gray-500">Destino</Text>
-                  <Text className="text-sm font-medium">{item.endFreightCity}</Text>
+                  <Text className="text-sm font-medium">
+                    {item.endFreightCity}
+                  </Text>
                 </View>
               )}
             </View>
@@ -256,8 +272,8 @@ export default function App() {
                 required
                 mask={numberMask}
                 label="Peso entregue"
-                value={values.tons_loaded}
-                onChangeText={handleChange('tons_loaded')}
+                value={values.tonsLoaded}
+                onChangeText={handleChange('tonsLoaded')}
               />
             </View>
             <Text className="mt-2 font-semibold ">ton</Text>
@@ -265,8 +281,8 @@ export default function App() {
           <MaskedInput
             mask={Masks.BRL_CURRENCY}
             label="Pedágio incluso"
-            value={values.toll_cost}
-            onChangeText={handleChange('toll_cost')}
+            value={values.tollCost}
+            onChangeText={handleChange('tollCost')}
           />
           <View className="flex-row items-center gap-x-4">
             <View className="flex-1">
@@ -312,7 +328,7 @@ export default function App() {
         <Button
           loading={mutation.isPending}
           onPress={() => handleSubmit()}
-          disabled={!values.tons_loaded}
+          disabled={!values.tonsLoaded}
         >
           Salvar
         </Button>

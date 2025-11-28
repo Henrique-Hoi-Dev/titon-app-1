@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { Image, ScrollView, Text, View, Platform } from 'react-native'
+import { Image, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Header, Layout } from '~/src/components/Layout'
 import * as ImagePicker from 'expo-image-picker'
@@ -57,7 +57,7 @@ export default function Upload() {
           try {
             const token = await getToken()
             const url = `${Config.apiUrl}/v1/driver/freight/search-documents?category=documents&filename=${file.uuid}`
-            
+
             // Faz fetch com token e converte para base64
             const response = await fetch(url, {
               headers: {

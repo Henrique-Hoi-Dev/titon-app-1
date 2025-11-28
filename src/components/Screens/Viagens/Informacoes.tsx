@@ -1,5 +1,4 @@
 import {
-  Image,
   Pressable,
   ScrollView,
   Text,
@@ -40,7 +39,7 @@ const getImageUrl = (
 export default function Informacoes({ item, loading = false }: Props) {
   const { width } = useWindowDimensions()
   const { user } = useAuth()
-  const [imageUrls, setImageUrls] = useState<{
+  const [, setImageUrls] = useState<{
     ticket?: string | null
     cte?: string | null
     freightLetter?: string | null

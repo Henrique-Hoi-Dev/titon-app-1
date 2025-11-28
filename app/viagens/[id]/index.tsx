@@ -62,7 +62,7 @@ export default function App() {
       <Header>
         <Skeleton show={shouldShow} colorMode="light">
           <Text className="text-2xl text-white -top-1.5">
-            {[item?.end_freight_city, item?.start_freight_city]
+            {[item?.endFreightCity, item?.startFreightCity]
               .filter(Boolean)
               .join(' / ')}
           </Text>

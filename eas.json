@@ -19,7 +19,8 @@
       "extends": "base",
       "distribution": "internal",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "image": "latest"
       }
     },
     "production": {
@@ -27,16 +28,19 @@
       "autoIncrement": true,
       "distribution": "store",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "image": "latest"
       }
     }
   },
   "submit": {
     "staging": {
-      "ios": {}
+      "ios": {},
+      "android": {}
     },
     "production": {
-      "ios": {}
+      "ios": {},
+      "android": {}
     }
   }
 }

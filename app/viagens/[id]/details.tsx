@@ -117,8 +117,8 @@ export default function App() {
   >({
     enableReinitialize: true,
     initialValues: {
-      tons_loaded: item?.tons_loaded?.toString() || '',
-      toll_cost: centsToMaskValue(item?.toll_cost),
+      tons_loaded: item?.tonsLoaded?.toString() || '',
+      toll_cost: centsToMaskValue(item?.tollCost),
       discharge: centsToMaskValue(item?.discharge),
     },
     onSubmit: async (values) => {
@@ -132,8 +132,8 @@ export default function App() {
 
   useEffect(() => {
     if (item) {
-      setFieldValue('tons_loaded', item.tons_loaded?.toString() || '')
-      setFieldValue('toll_cost', centsToMaskValue(item.toll_cost))
+      setFieldValue('tons_loaded', item.tonsLoaded?.toString() || '')
+      setFieldValue('toll_cost', centsToMaskValue(item.tollCost))
       setFieldValue('discharge', centsToMaskValue(item.discharge))
     }
   }, [item, setFieldValue])
@@ -149,6 +149,103 @@ export default function App() {
         <Text className="text-2xl text-white">Detalhes da carga</Text>
       </Header>
       <ScrollView className="p-4">
+        {item && (
+          <Card className="mb-6">
+            <Text className="mb-4 text-lg font-semibold">
+              Informações da cotação
+            </Text>
+            <View className="flex-row flex-wrap gap-4">
+              {item.contractorName && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Transportadora</Text>
+                  <Text className="text-sm font-medium">{item.contractorName}</Text>
+                </View>
+              )}
+              {item.estimatedTonnage && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Peso estimado</Text>
+                  <Text className="text-sm font-medium">
+                    {(item.estimatedTonnage / 1000).toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{' '}
+                    ton
+                  </Text>
+                </View>
+              )}
+              {item.tonValue && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Preço por tonelada</Text>
+                  <Text className="text-sm font-medium">
+                    R${' '}
+                    {(item.tonValue / 100).toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </Text>
+                </View>
+              )}
+              {item.estimatedFuelCost && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Preço do diesel</Text>
+                  <Text className="text-sm font-medium">
+                    R${' '}
+                    {(item.estimatedFuelCost / 100).toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </Text>
+                </View>
+              )}
+              {item.fuelAvgPerKm && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Média do caminhão</Text>
+                  <Text className="text-sm font-medium">
+                    {item.fuelAvgPerKm} km/l
+                  </Text>
+                </View>
+              )}
+              {item.truckCurrentKm && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Km atual</Text>
+                  <Text className="text-sm font-medium">
+                    {item.truckCurrentKm.toLocaleString('pt-BR')} km
+                  </Text>
+                </View>
+              )}
+              {item.truckLocation && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Localização</Text>
+                  <Text className="text-sm font-medium">{item.truckLocation}</Text>
+                </View>
+              )}
+              {item.routeDistanceKm && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Distância</Text>
+                  <Text className="text-sm font-medium">{item.routeDistanceKm}</Text>
+                </View>
+              )}
+              {item.routeDuration && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Duração</Text>
+                  <Text className="text-sm font-medium">{item.routeDuration}</Text>
+                </View>
+              )}
+              {item.startFreightCity && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Origem</Text>
+                  <Text className="text-sm font-medium">{item.startFreightCity}</Text>
+                </View>
+              )}
+              {item.endFreightCity && (
+                <View className="flex-1 min-w-[45%]">
+                  <Text className="text-xs text-gray-500">Destino</Text>
+                  <Text className="text-sm font-medium">{item.endFreightCity}</Text>
+                </View>
+              )}
+            </View>
+          </Card>
+        )}
         <Text className="mt-2 mb-6 text-xl font-semibold">
           Mais informações sobre a carga
         </Text>

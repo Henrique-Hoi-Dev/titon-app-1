@@ -23,7 +23,7 @@ export default function FreteCard({ item, index }: FreteCardProps) {
       {index !== 0 && <View className="w-full h-px my-4 bg-zinc-200" />}
       <View
         className={`rounded-lg ${
-          item.is_on_the_way ? 'bg-white ' : 'bg-transparent'
+          item.isOnTheWay ? 'bg-white ' : 'bg-transparent'
         } w-full relative shadow-lg`}
       >
         <View className={`px-5 pt-5 pl-10`}>
@@ -36,11 +36,9 @@ export default function FreteCard({ item, index }: FreteCardProps) {
           </View>
           <View className="flex-row items-center justify-between">
             <View>
+              <Text className="text-gray-950 mb-5">{item.endFreightCity}</Text>
               <Text className="text-gray-950 mb-5">
-                {item.end_freight_city}
-              </Text>
-              <Text className="text-gray-950 mb-5">
-                {item.start_freight_city}
+                {item.startFreightCity}
               </Text>
             </View>
             <View className="items-end justify-between h-20">
@@ -55,12 +53,19 @@ export default function FreteCard({ item, index }: FreteCardProps) {
                 color="#1757D4"
                 icon="chevron-right"
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
-                onPress={() =>
-                  router.navigate({
-                    pathname: '/viagens/[id]',
-                    params: { id: String(item.id) },
-                  })
-                }
+                onPress={() => {
+                  if (item.status === 'DRAFT') {
+                    router.navigate({
+                      pathname: '/viagens/cotacoes/new',
+                      params: { freightId: String(item.id) },
+                    })
+                  } else {
+                    router.navigate({
+                      pathname: '/viagens/[id]',
+                      params: { id: String(item.id) },
+                    })
+                  }
+                }}
                 size={28}
               />
             </View>
@@ -73,7 +78,7 @@ export default function FreteCard({ item, index }: FreteCardProps) {
               Tempo estimado:
             </Text>
             <Text className="text-sm font-light text-primary-700 ">
-              {item.route_duration}
+              {item.routeDuration || '-'}
             </Text>
           </View>
           <View className="flex-row items-center justify-between">
@@ -81,7 +86,7 @@ export default function FreteCard({ item, index }: FreteCardProps) {
               Distância:
             </Text>
             <Text className="text-sm font-light text-primary-700 ">
-              {item.route_distance_km}
+              {item.routeDistanceKm || '-'}
             </Text>
           </View>
           {item.status === 'STARTING_TRIP' && (

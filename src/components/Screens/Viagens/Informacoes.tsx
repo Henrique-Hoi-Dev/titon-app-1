@@ -1,4 +1,5 @@
 import {
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -13,15 +14,37 @@ import { router } from 'expo-router'
 import { Skeleton } from 'moti/skeleton'
 import { Freight } from '~/src/types'
 import { useRestocks, useTravels } from '~/src/hooks'
+import Config from '~/src/config'
+import { useEffect, useState } from 'react'
 
 type Props = {
   item: Freight
   loading?: boolean
 }
 
+// Helper para verificar se o arquivo tem dados (não é objeto vazio)
+const hasFile = (file: { uuid?: string; name?: string } | null | undefined) => {
+  if (!file) return false
+  // Verifica se tem pelo menos uuid ou name (não é objeto vazio)
+  return !!(file.uuid || file.name)
+}
+
+// Helper para buscar URL da imagem
+const getImageUrl = (
+  file: { uuid?: string; name?: string } | null | undefined,
+) => {
+  if (!hasFile(file) || !file?.uuid) return null
+  return `${Config.apiUrl}/v1/driver/freight/search-documents?category=documents&filename=${file.uuid}`
+}
+
 export default function Informacoes({ item, loading = false }: Props) {
   const { width } = useWindowDimensions()
   const { user } = useAuth()
+  const [imageUrls, setImageUrls] = useState<{
+    ticket?: string | null
+    cte?: string | null
+    freightLetter?: string | null
+  }>({})
 
   // Só busca dados se o item existir e não estiver em loading
   const shouldFetch = !loading && item?.id
@@ -35,6 +58,17 @@ export default function Informacoes({ item, loading = false }: Props) {
     (acc, curr) => acc + curr.value / 100,
     0,
   )
+
+  // Busca URLs das imagens quando o item carregar
+  useEffect(() => {
+    if (item) {
+      setImageUrls({
+        ticket: getImageUrl(item.imgProofTicket),
+        cte: getImageUrl(item.imgProofCte),
+        freightLetter: getImageUrl(item.imgProofFreightLetter),
+      })
+    }
+  }, [item])
 
   return (
     <ScrollView>
@@ -153,12 +187,12 @@ export default function Informacoes({ item, loading = false }: Props) {
               <View className="flex-row items-center gap-x-2">
                 <MaterialCommunityIcons
                   name={
-                    item?.img_proof_ticket
+                    hasFile(item?.imgProofTicket)
                       ? 'check-circle'
                       : 'checkbox-blank-circle-outline'
                   }
                   size={16}
-                  color={item?.img_proof_ticket ? 'green' : 'black'}
+                  color={hasFile(item?.imgProofTicket) ? 'green' : 'black'}
                 />
                 <MaterialCommunityIcons
                   name="chevron-right"
@@ -186,12 +220,12 @@ export default function Informacoes({ item, loading = false }: Props) {
               <View className="flex-row items-center gap-x-2">
                 <MaterialCommunityIcons
                   name={
-                    item?.img_proof_cte
+                    hasFile(item?.imgProofCte)
                       ? 'check-circle'
                       : 'checkbox-blank-circle-outline'
                   }
                   size={16}
-                  color={item?.img_proof_cte ? 'green' : 'black'}
+                  color={hasFile(item?.imgProofCte) ? 'green' : 'black'}
                 />
                 <MaterialCommunityIcons
                   name="chevron-right"
@@ -221,12 +255,14 @@ export default function Informacoes({ item, loading = false }: Props) {
               <View className="flex-row items-center gap-x-2">
                 <MaterialCommunityIcons
                   name={
-                    item?.img_proof_freight_letter
+                    hasFile(item?.imgProofFreightLetter)
                       ? 'check-circle'
                       : 'checkbox-blank-circle-outline'
                   }
                   size={16}
-                  color={item?.img_proof_freight_letter ? 'green' : 'black'}
+                  color={
+                    hasFile(item?.imgProofFreightLetter) ? 'green' : 'black'
+                  }
                 />
                 <MaterialCommunityIcons
                   name="chevron-right"

@@ -6,7 +6,7 @@ export const getFaturamento = (viagens: Freight[] | Freight) => {
   if (Array.isArray(viagens)) {
     const faturamento = viagens.reduce((acc, cur) => {
       if (cur.status === 'FINISHED') {
-        return acc + (cur?.ton_value ?? 0 / 100) * cur?.tons_loaded || 1
+        return acc + (cur?.tonValue ?? 0 / 100) * cur?.tonsLoaded || 1
       }
       return acc
     }, 0)
@@ -14,7 +14,7 @@ export const getFaturamento = (viagens: Freight[] | Freight) => {
     return faturamento
   }
 
-  return (viagens?.ton_value ?? 0 / 100) * (viagens?.tons_loaded || 0)
+  return (viagens?.tonValue ?? 0 / 100) * (viagens?.tonsLoaded || 0)
 }
 
 export const getComissao = (viagens: Freight[] | Freight, user: User) => {

@@ -1,6 +1,5 @@
 import { SectionList, Text, useWindowDimensions, View } from 'react-native'
 import { Masks, formatWithMask } from 'react-native-mask-input'
-import { useRestocks } from '~/src/hooks/useRestocks'
 import type { Restock, Freight } from '~/src/types'
 // import { banks } from '~/src/utils/forms'
 import Card from '../../Card'
@@ -20,12 +19,10 @@ export default function Abastecimentos({
   freight: Freight
 }) {
   const { width } = useWindowDimensions()
-  const fetchId = items ? 0 : id
-  const { data } = useRestocks(fetchId)
 
   const groupedByCreatedAt = Object.values(
     _.groupBy(
-      (items ?? data)
+      (items ?? [])
         ?.sort((a, b) => {
           return b.createdAt.getTime() - a.createdAt.getTime()
         })
@@ -67,8 +64,8 @@ export default function Abastecimentos({
               -
               {
                 formatWithMask({
-                  text: (items ?? data)
-                    ?.reduce((acc, cur) => acc + cur.total_value_fuel, 0)
+                  text: (items ?? [])
+                    ?.reduce((acc, cur) => acc + cur.total_nota_value, 0)
                     .toString(),
                   mask: Masks.BRL_CURRENCY,
                 }).masked
@@ -85,39 +82,84 @@ export default function Abastecimentos({
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <Card className="mb-4">
-            <View className="flex-row gap-x-4 items-center ">
+            <View className="flex-row gap-x-4">
               <MaterialCommunityIcons
                 name="arrow-down-circle-outline"
                 size={20}
                 color="#ef4444"
               />
-              <View className="flex-1 gap-y-1">
-                <View className="rounded-lg bg-red-200 w-[86px] py-1 px-2">
-                  <Text className="text-xs text-red-600">Abastecidas</Text>
+              <View className="flex-1 gap-y-2">
+                <View className="flex-row items-center justify-between">
+                  <View className="rounded-lg bg-red-200 px-2 py-1">
+                    <Text className="text-xs text-red-600 font-medium">
+                      Abastecidas
+                    </Text>
+                  </View>
+                  <View className="items-end">
+                    <Text className="text-xs text-gray-500 mb-0.5">
+                      Valor total
+                    </Text>
+                    <Text className="text-sm font-semibold text-red-500">
+                      -
+                      {
+                        formatWithMask({
+                          text: item.total_nota_value?.toString() ?? '000',
+                          mask: Masks.BRL_CURRENCY,
+                        }).masked
+                      }
+                    </Text>
+                  </View>
                 </View>
-                {/* <Text className="text-xs text-gray-950/50">
-                {
-                  banks.filter(
-                    (bank) => Object.keys(bank)[0] === item.type_bank,
-                  )[0][item.type_bank]
-                }
-              </Text> */}
-                <Text className="text-sm text-gray-800">
+                <Text className="text-sm text-gray-800 font-medium">
                   {item.name_establishment}
                 </Text>
-                <Text className="text-sm text-gray-800/50">
-                  {item.createdAt.toLocaleDateString()}
+                {item.city && (
+                  <View>
+                    <Text className="text-xs text-gray-500 mb-0.5">
+                      Cidade que foi abastecida
+                    </Text>
+                    <Text className="text-xs text-gray-800">{item.city}</Text>
+                  </View>
+                )}
+                <View className="flex-row gap-x-4 flex-wrap">
+                  {item.liters_fuel > 0 && (
+                    <View className="flex-1 min-w-[120px]">
+                      <Text className="text-xs text-gray-500 mb-0.5">
+                        Total de litros
+                      </Text>
+                      <Text className="text-xs text-gray-800 font-medium">
+                        {item.liters_fuel.toLocaleString('pt-BR', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{' '}
+                        L
+                      </Text>
+                    </View>
+                  )}
+                  {item.total_nota_value > 0 && (
+                    <View className="flex-1 min-w-[120px]">
+                      <Text className="text-xs text-gray-500 mb-0.5">
+                        Valor do combustível
+                      </Text>
+                      <Text className="text-xs text-gray-800 font-medium">
+                        {
+                          formatWithMask({
+                            text: item.value_fuel?.toString() ?? '000',
+                            mask: Masks.BRL_CURRENCY,
+                          }).masked
+                        }
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text className="text-xs text-gray-500 mt-1">
+                  {item.createdAt.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })}
                 </Text>
               </View>
-              <Text className="text-sm text-red-500">
-                -
-                {
-                  formatWithMask({
-                    text: item.total_value_fuel?.toString() ?? '000',
-                    mask: Masks.BRL_CURRENCY,
-                  }).masked
-                }
-              </Text>
             </View>
           </Card>
         )}

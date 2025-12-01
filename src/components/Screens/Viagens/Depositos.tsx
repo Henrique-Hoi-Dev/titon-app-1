@@ -1,6 +1,5 @@
 import { SectionList, Text, useWindowDimensions, View } from 'react-native'
 import { Masks, formatWithMask } from 'react-native-mask-input'
-import { useDeposits } from '~/src/hooks/useDeposits'
 import type { Deposit, Freight } from '~/src/types'
 // import { banks } from '~/src/utils/forms'
 import Card from '../../Card'
@@ -20,12 +19,10 @@ export default function Depositos({
   freight: Freight
 }) {
   const { width } = useWindowDimensions()
-  const fetchId = items ? 0 : id
-  const { data } = useDeposits(fetchId)
 
   const groupedByCreatedAt = Object.values(
     _.groupBy(
-      (items ?? data)
+      (items ?? [])
         ?.sort((a, b) => {
           return b.createdAt.getTime() - a.createdAt.getTime()
         })
@@ -67,7 +64,7 @@ export default function Depositos({
               -
               {
                 formatWithMask({
-                  text: (items ?? data)
+                  text: (items ?? [])
                     ?.reduce((acc, cur) => acc + cur.value, 0)
                     .toString(),
                   mask: Masks.BRL_CURRENCY,

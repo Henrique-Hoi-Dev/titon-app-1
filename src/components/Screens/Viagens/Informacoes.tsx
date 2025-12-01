@@ -12,7 +12,6 @@ import Button from '~/src/components/Button'
 import { router } from 'expo-router'
 import { Skeleton } from 'moti/skeleton'
 import { Freight } from '~/src/types'
-import { useRestocks, useTravels } from '~/src/hooks'
 import Config from '~/src/config'
 import { useEffect, useState } from 'react'
 
@@ -45,15 +44,12 @@ export default function Informacoes({ item, loading = false }: Props) {
     freightLetter?: string | null
   }>({})
 
-  // Só busca dados se o item existir e não estiver em loading
-  const shouldFetch = !loading && item?.id
-  const { data: abastecimentos } = useRestocks(shouldFetch ? item.id : 0)
-  const totalAbastecimentos = abastecimentos?.reduce(
+  // Calcula totais usando os dados do objeto principal
+  const totalAbastecimentos = (item.restock ?? []).reduce(
     (acc, curr) => acc + curr.total_value_fuel / 100,
     0,
   )
-  const { data: despesas } = useTravels(shouldFetch ? item.id : 0)
-  const totalDespesas = despesas?.reduce(
+  const totalDespesas = (item.travelExpense ?? []).reduce(
     (acc, curr) => acc + curr.value / 100,
     0,
   )

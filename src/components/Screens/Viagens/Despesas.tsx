@@ -1,8 +1,7 @@
 import { SectionList, Text, useWindowDimensions, View } from 'react-native'
 import { Masks, formatWithMask } from 'react-native-mask-input'
-import { useTravels } from '~/src/hooks/useTravels'
 import type { Travel, Freight } from '~/src/types'
-// import { banks } from '~/src/utils/forms'
+import { establishmentTypes, toSelectData } from '~/src/utils/forms'
 import Card from '../../Card'
 import _ from 'lodash'
 import moment from 'moment'
@@ -20,12 +19,10 @@ export default function Despesas({
   freight: Freight
 }) {
   const { width } = useWindowDimensions()
-  const fetchId = items ? 0 : id
-  const { data } = useTravels(fetchId)
 
   const groupedByCreatedAt = Object.values(
     _.groupBy(
-      (items ?? data)
+      (items ?? [])
         ?.sort((a, b) => {
           return b.createdAt.getTime() - a.createdAt.getTime()
         })
@@ -67,7 +64,7 @@ export default function Despesas({
               -
               {
                 formatWithMask({
-                  text: (items ?? data)
+                  text: (items ?? [])
                     ?.reduce((acc, cur) => acc + (cur.value ?? 0), 0)
                     .toString(),
                   mask: Masks.BRL_CURRENCY,
@@ -85,39 +82,62 @@ export default function Despesas({
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <Card className="mb-4">
-            <View className="flex-row gap-x-4 items-center ">
+            <View className="flex-row gap-x-4">
               <MaterialCommunityIcons
                 name="arrow-down-circle-outline"
                 size={20}
                 color="#ef4444"
               />
-              <View className="flex-1 gap-y-1">
-                <View className="rounded-lg bg-red-200 w-[72px] py-1 px-2">
-                  <Text className="text-xs text-red-600">Despesas</Text>
+              <View className="flex-1 gap-y-2">
+                <View className="flex-row items-center justify-between">
+                  <View className="rounded-lg bg-red-200 px-2 py-1">
+                    <Text className="text-xs text-red-600 font-medium">
+                      Despesas
+                    </Text>
+                  </View>
+                  <Text className="text-sm font-semibold text-red-500">
+                    -
+                    {
+                      formatWithMask({
+                        text: item.value?.toString() ?? '000',
+                        mask: Masks.BRL_CURRENCY,
+                      }).masked
+                    }
+                  </Text>
                 </View>
-                {/* <Text className="text-xs text-gray-950/50">
-                {
-                  banks.filter(
-                    (bank) => Object.keys(bank)[0] === item.type_bank,
-                  )[0][item.type_bank]
-                }
-              </Text> */}
-                <Text className="text-sm text-gray-800">
+                <Text className="text-sm text-gray-800 font-medium">
                   {item.name_establishment}
                 </Text>
-                <Text className="text-sm text-gray-800/50">
-                  {item.createdAt.toLocaleDateString()}
+                {item.type_establishment && (
+                  <View>
+                    <Text className="text-xs text-gray-500 mb-0.5">
+                      Tipo de estabelecimento
+                    </Text>
+                    <Text className="text-xs text-gray-800">
+                      {
+                        toSelectData(establishmentTypes).find(
+                          (type) => type.value === item.type_establishment,
+                        )?.label || item.type_establishment
+                      }
+                    </Text>
+                  </View>
+                )}
+                {item.city && (
+                  <View>
+                    <Text className="text-xs text-gray-500 mb-0.5">
+                      Cidade
+                    </Text>
+                    <Text className="text-xs text-gray-800">{item.city}</Text>
+                  </View>
+                )}
+                <Text className="text-xs text-gray-500 mt-1">
+                  {item.createdAt.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })}
                 </Text>
               </View>
-              <Text className="text-sm text-red-500">
-                -
-                {
-                  formatWithMask({
-                    text: item.value?.toString() ?? '000',
-                    mask: Masks.BRL_CURRENCY,
-                  }).masked
-                }
-              </Text>
             </View>
           </Card>
         )}

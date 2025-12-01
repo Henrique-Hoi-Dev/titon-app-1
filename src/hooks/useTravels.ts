@@ -1,7 +1,7 @@
 import { DataToApiPost } from '../@types/utils'
 import Api from '../services/api'
 import { toJsonBody } from '../utils/forms'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMutation } from './useMutation'
 import {
   Travel,
@@ -17,6 +17,7 @@ type StoreType = {
 }
 
 export function useTravels(freightId: number, options?: UseTravelsOptions) {
+  const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: ['deposits', freightId],
     queryFn: async () => {
@@ -67,9 +68,18 @@ export function useTravels(freightId: number, options?: UseTravelsOptions) {
 
       return response.data
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       options?.onSuccess?.(data.data)
-      query.refetch()
+      // Só faz refetch se a query estiver habilitada
+      if (freightId !== 0) {
+        query.refetch()
+      }
+      // Invalida o cache do frete para atualizar os dados
+      if (variables.freightId) {
+        queryClient.invalidateQueries({
+          queryKey: ['freight', variables.freightId],
+        })
+      }
     },
     onError: options?.onError,
   })

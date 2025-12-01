@@ -1,11 +1,11 @@
 import { Alert, Pressable, ScrollView, Text, View, Image } from 'react-native'
 import { Masks } from 'react-native-mask-input'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button, MaskedInput, Select, TextInput } from '~/src/components/Form'
+import { Button, MaskedInput, Select } from '~/src/components/Form'
 import { Header, Layout } from '~/src/components/Layout'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
-import { banks, depositsTypes, toSelectData } from '~/src/utils/forms'
+import { banks, depositsTypes, toSelectData, getError } from '~/src/utils/forms'
 import { useDeposits } from '~/src/hooks/useDeposits'
 import { useFinancialStatement, useFreight } from '~/src/hooks'
 import React, { useEffect, useState } from 'react'
@@ -20,12 +20,16 @@ import UploadInput, {
 import { ImagePickerAsset } from 'expo-image-picker'
 import Toast from 'react-native-toast-message'
 import { ErrorKey, getErrorMessage } from '~/src/utils/errors'
+import { useQuery } from '@tanstack/react-query'
+import api from '~/src/services/api'
 
 const validationSchema = Yup.object().shape({
   type_transaction: Yup.string().required('Campo obrigatório'),
   local: Yup.string().required('Campo obrigatório'),
   type_bank: Yup.string().required('Campo obrigatório'),
   value: Yup.string().required('Campo obrigatório'),
+  state: Yup.string().required('Campo obrigatório'),
+  city: Yup.string().required('Campo obrigatório'),
 })
 export default function App() {
   const router = useRouter()
@@ -44,10 +48,41 @@ export default function App() {
   const { id } = useLocalSearchParams<{
     id: string
   }>()
-  const { data } = useFinancialStatement()
+  const { data: _financialStatement } = useFinancialStatement()
   const { data: activeFreight } = useFreight(Number(id))
 
-  const { store } = useDeposits(data?.id || 0, {
+  const states = useQuery({
+    queryKey: ['states'],
+    queryFn: async () => {
+      const response = await api.get<{
+        data: {
+          id: number
+          name: string
+          uf: string
+        }[]
+      }>('/driver/states')
+      return response.data.data
+    },
+  })
+
+  const cities = useQuery({
+    queryKey: ['cities'],
+    queryFn: async () => {
+      const response = await api.get<{
+        data: {
+          id: number
+          name: string
+          states: {
+            uf: string
+          }
+        }[]
+      }>(`/driver/cities`)
+
+      return response.data.data
+    },
+  })
+
+  const { store } = useDeposits(0, {
     onSuccess: async (data) => {
       await uploadInvoice.mutateAsync({
         id: data.id,
@@ -84,12 +119,15 @@ export default function App() {
     handleSubmit,
     isValid,
     validateForm,
+    setFieldValue,
   } = useFormik({
     initialValues: {
       type_transaction: '',
       local: '',
       type_bank: '',
       value: '',
+      state: '',
+      city: '',
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -98,9 +136,11 @@ export default function App() {
         return
       }
 
+      const { state, city, ...restValues } = values
       const data = {
-        ...values,
+        ...restValues,
         value: Number(values.value.replace(/\D/g, '')),
+        local: `${city} - ${state}`,
       }
 
       if (!activeFreight) {
@@ -158,13 +198,45 @@ export default function App() {
           <Progress value={(100 / totalSteps) * step} className="mt-6" />
           {step === 1 && (
             <Card className="mt-8">
-              <TextInput
-                label="Local"
-                value={values.local}
-                error={errors.local}
-                onChangeText={handleChange('local')}
-                autoFocus
+              <Select
+                required
+                searchable
+                value={values.state}
+                data={
+                  states.data?.map((state) => ({
+                    label: state.name,
+                    value: state.uf,
+                  })) ?? []
+                }
+                onSelect={(item) => {
+                  handleChange('state')(item?.value ?? '')
+                  setFieldValue('city', '')
+                }}
+                placeholder="Selecione o estado"
+                label="Estado"
+                error={getError(errors, 'state')}
+                loading={states.isFetching}
               />
+              {values.state && (
+                <Select
+                  required
+                  searchable
+                  value={values.city}
+                  data={
+                    cities.data
+                      ?.filter((city) => city.states.uf === values.state)
+                      .map((city) => ({
+                        label: city.name,
+                        value: city.name,
+                      })) ?? []
+                  }
+                  onSelect={(item) => handleChange('city')(item?.value ?? '')}
+                  placeholder="Selecione a cidade"
+                  label="Cidade"
+                  error={getError(errors, 'city')}
+                  loading={cities.isFetching}
+                />
+              )}
               <Select
                 label="Tipo de transferência"
                 data={toSelectData(depositsTypes).sort((a, b) =>
@@ -215,10 +287,14 @@ export default function App() {
 
           {step === 3 && (
             <View className="mt-8">
-              <Text className="font-medium ">Local</Text>
-              <Text className="text-lg font-medium text-primary-600">
-                {values.local}
-              </Text>
+              {values.city && values.state && (
+                <>
+                  <Text className="font-medium ">Local</Text>
+                  <Text className="text-lg font-medium text-primary-600">
+                    {values.city} - {values.state}
+                  </Text>
+                </>
+              )}
               <Text className="mt-8 font-medium">Tipo de transferência</Text>
               <Text className="text-lg font-medium text-primary-600">
                 {

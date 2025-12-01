@@ -8,11 +8,7 @@ import { Masks } from 'react-native-mask-input'
 import { useFinancialStatement, useFreight, useTravels } from '~/src/hooks'
 import { useEffect, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import {
-  establishmentTypes,
-  toSelectData,
-  transactionTypes,
-} from '~/src/utils/forms'
+import { establishmentTypes, toSelectData, getError } from '~/src/utils/forms'
 import Card from '~/src/components/Card'
 import Feedback from '~/src/components/Layout/Feedback'
 import Progress from '~/src/components/Progress'
@@ -23,13 +19,16 @@ import UploadInput, {
 import { ImagePickerAsset } from 'expo-image-picker'
 import Toast from 'react-native-toast-message'
 import { ErrorKey, getErrorMessage } from '~/src/utils/errors'
+import { useQuery } from '@tanstack/react-query'
+import api from '~/src/services/api'
 
 const validationSchema = Yup.object().shape({
   type_establishment: Yup.string().required('Campo obrigatório'),
   name_establishment: Yup.string().required('Campo obrigatório'),
   expense_description: Yup.string(),
   value: Yup.string().required('Campo obrigatório'),
-  type_transaction: Yup.string().required('Campo obrigatório'),
+  state: Yup.string().required('Campo obrigatório'),
+  city: Yup.string().required('Campo obrigatório'),
 })
 
 export default function App() {
@@ -49,8 +48,39 @@ export default function App() {
   const { id } = useLocalSearchParams<{
     id: string
   }>()
-  const { data } = useFinancialStatement()
+  const { data: _financialStatement } = useFinancialStatement()
   const { data: activeFreight } = useFreight(Number(id))
+
+  const states = useQuery({
+    queryKey: ['states'],
+    queryFn: async () => {
+      const response = await api.get<{
+        data: {
+          id: number
+          name: string
+          uf: string
+        }[]
+      }>('/driver/states')
+      return response.data.data
+    },
+  })
+
+  const cities = useQuery({
+    queryKey: ['cities'],
+    queryFn: async () => {
+      const response = await api.get<{
+        data: {
+          id: number
+          name: string
+          states: {
+            uf: string
+          }
+        }[]
+      }>(`/driver/cities`)
+
+      return response.data.data
+    },
+  })
 
   const [image, setImage] = useState<ImagePickerAsset>()
   const [picking, setPicking] = useState(false)
@@ -65,7 +95,7 @@ export default function App() {
     },
   })
 
-  const { store } = useTravels(data?.id || 0, {
+  const { store } = useTravels(0, {
     onSuccess: async (data) => {
       await uploadInvoice.mutateAsync({
         id: data.id,
@@ -89,13 +119,15 @@ export default function App() {
     handleSubmit,
     isValid,
     validateForm,
+    setFieldValue,
   } = useFormik({
     initialValues: {
       type_establishment: '',
       name_establishment: '',
       expense_description: '',
       value: '',
-      type_transaction: '',
+      state: '',
+      city: '',
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -104,9 +136,20 @@ export default function App() {
         return
       }
 
+      const {
+        state,
+        city,
+        expense_description: expenseDescription,
+        ...restValues
+      } = values
       const data = {
-        ...values,
+        ...restValues,
         value: Number(values.value.replace(/\D/g, '')),
+        city: `${city} - ${state}`,
+        ...(expenseDescription &&
+          expenseDescription.trim() !== '' && {
+            expense_description: expenseDescription,
+          }),
       }
 
       if (!activeFreight) {
@@ -143,7 +186,7 @@ export default function App() {
         }}
       >
         <Text className="uppercase text-white text-2xl -mt-1.5 pr-10 text-center">
-          Novo Depósito
+          Nova Despesa
         </Text>
       </Header>
       <ScrollView
@@ -176,11 +219,50 @@ export default function App() {
                 error={errors.type_establishment}
               />
               <TextInput
-                label="Local"
+                label="Nome do estabelecimento"
                 value={values.name_establishment}
                 error={errors.name_establishment}
                 onChangeText={handleChange('name_establishment')}
               />
+              <Select
+                required
+                searchable
+                value={values.state}
+                data={
+                  states.data?.map((state) => ({
+                    label: state.name,
+                    value: state.uf,
+                  })) ?? []
+                }
+                onSelect={(item) => {
+                  handleChange('state')(item?.value ?? '')
+                  setFieldValue('city', '')
+                }}
+                placeholder="Selecione o estado"
+                label="Estado"
+                error={getError(errors, 'state')}
+                loading={states.isFetching}
+              />
+              {values.state && (
+                <Select
+                  required
+                  searchable
+                  value={values.city}
+                  data={
+                    cities.data
+                      ?.filter((city) => city.states.uf === values.state)
+                      .map((city) => ({
+                        label: city.name,
+                        value: city.name,
+                      })) ?? []
+                  }
+                  onSelect={(item) => handleChange('city')(item?.value ?? '')}
+                  placeholder="Selecione a cidade"
+                  label="Cidade"
+                  error={getError(errors, 'city')}
+                  loading={cities.isFetching}
+                />
+              )}
               <TextInput
                 label="Necessidade relatada"
                 value={values.expense_description}
@@ -196,17 +278,6 @@ export default function App() {
                 error={errors.value}
                 onChangeText={handleChange('value')}
                 keyboardType="numeric"
-              />
-              <Select
-                label="Forma de pagamento"
-                data={toSelectData(transactionTypes)}
-                onSelect={(item) =>
-                  handleChange('type_transaction')(
-                    item ? String(item.value) : '',
-                  )
-                }
-                value={values.type_transaction}
-                error={errors.type_transaction}
               />
             </Card>
           )}
@@ -233,10 +304,18 @@ export default function App() {
                   })?.label
                 }
               </Text>
-              <Text className="font-medium ">Local</Text>
+              <Text className="font-medium mt-8">Nome do estabelecimento</Text>
               <Text className="text-lg font-medium text-primary-600">
                 {values.name_establishment}
               </Text>
+              {values.city && values.state && (
+                <>
+                  <Text className="mt-8 font-medium">Cidade</Text>
+                  <Text className="text-lg font-medium text-primary-600">
+                    {values.city} - {values.state}
+                  </Text>
+                </>
+              )}
               <Text className="font-medium ">Necessidade Relatada</Text>
               <Text className="text-lg font-medium text-primary-600">
                 {values.expense_description}
@@ -244,14 +323,6 @@ export default function App() {
               <Text className="mt-8 font-medium">Valor</Text>
               <Text className="text-lg font-medium text-primary-600">
                 {values.value}
-              </Text>
-              <Text className="mt-8 font-medium">Forma de pagamento</Text>
-              <Text className="text-lg font-medium text-primary-600">
-                {
-                  toSelectData(transactionTypes).find((type) => {
-                    return type.value === values.type_transaction
-                  })?.label
-                }
               </Text>
               <Text className="mt-8 font-medium mb-2">Comprovante</Text>
               <Card className={`relative shadow-sm`}>
@@ -310,7 +381,16 @@ export default function App() {
               )}
 
               {feedbackType === 'success' && (
-                <Button onPress={() => router.back()}>Visualizar</Button>
+                <Button
+                  onPress={() => {
+                    router.replace({
+                      pathname: `/viagens/[id]`,
+                      params: { id, tab: 'despesas' },
+                    })
+                  }}
+                >
+                  Visualizar
+                </Button>
               )}
 
               <Pressable

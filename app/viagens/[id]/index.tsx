@@ -106,10 +106,18 @@ export default function App() {
         {item && (
           <>
             {activeTab === 'depositos' && (
-              <Depositos id={item.id} items={item.depositMoney} freight={item} />
+              <Depositos
+                id={item.id}
+                items={item.depositMoney}
+                freight={item}
+              />
             )}
             {activeTab === 'despesas' && (
-              <Despesas id={item.id} items={item.travelExpense} freight={item} />
+              <Despesas
+                id={item.id}
+                items={item.travelExpense}
+                freight={item}
+              />
             )}
             {activeTab === 'abastecimentos' && (
               <Abastecimentos

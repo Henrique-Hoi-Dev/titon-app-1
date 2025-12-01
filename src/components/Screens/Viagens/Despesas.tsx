@@ -114,19 +114,15 @@ export default function Despesas({
                       Tipo de estabelecimento
                     </Text>
                     <Text className="text-xs text-gray-800">
-                      {
-                        toSelectData(establishmentTypes).find(
-                          (type) => type.value === item.type_establishment,
-                        )?.label || item.type_establishment
-                      }
+                      {toSelectData(establishmentTypes).find(
+                        (type) => type.value === item.type_establishment,
+                      )?.label || item.type_establishment}
                     </Text>
                   </View>
                 )}
                 {item.city && (
                   <View>
-                    <Text className="text-xs text-gray-500 mb-0.5">
-                      Cidade
-                    </Text>
+                    <Text className="text-xs text-gray-500 mb-0.5">Cidade</Text>
                     <Text className="text-xs text-gray-800">{item.city}</Text>
                   </View>
                 )}

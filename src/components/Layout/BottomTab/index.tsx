@@ -18,9 +18,11 @@ export default function BottomTab(): JSX.Element | null {
   const router = useRouter()
   const segments = useSegments()
   const isAuth = segments[0] === '(auth)'
-  const isViagem = segments.includes('viagens')
+  const isViagem = (segments as string[]).some(
+    (segment) => segment === 'viagens',
+  )
   const isPageToHide = isAuth || isViagem
-  const { hasUnread } = useNotifications()
+  const { hasUnread, unreadCount } = useNotifications()
 
   const shouldHideBottomTab = useSharedValue(false)
 
@@ -67,10 +69,13 @@ export default function BottomTab(): JSX.Element | null {
 
   return (
     <Portal>
-      <Animated.View style={style} className="absolute flex-row bg-transparent">
+      <Animated.View
+        style={[style, { left: 0, right: 0, width: '100%' }]}
+        className="absolute flex-row bg-transparent"
+      >
         <SafeAreaView
           edges={['bottom']}
-          className="bg-white  flex-row justify-around items-center pt-4 pb-6 w-[100%] rounded-t-2xl px-4"
+          className="bg-white flex-row justify-around items-center pt-4 pb-6 w-full rounded-t-2xl px-4"
           style={{
             shadowColor: '#000',
             shadowOffset: {
@@ -104,6 +109,7 @@ export default function BottomTab(): JSX.Element | null {
             label="Notificações"
             active={isActive('notifications')}
             showBadge={hasUnread}
+            badgeCount={unreadCount}
           />
         </SafeAreaView>
       </Animated.View>

@@ -78,6 +78,13 @@ export default function useNotifications() {
     },
   })
 
+  const unreadCount =
+    notifications.data?.pages.reduce(
+      (total, page) =>
+        total + page.docs.filter((notification) => !notification.read).length,
+      0,
+    ) ?? 0
+
   return {
     data: notifications.data?.pages.flatMap((page) => page.docs) ?? [],
     isFetching: notifications.isFetching,
@@ -85,9 +92,8 @@ export default function useNotifications() {
     hasNextPage: notifications.hasNextPage,
     fetchNextPage: notifications.fetchNextPage,
     refetch: notifications.refetch,
-    hasUnread: notifications.data?.pages.some((page) =>
-      page.docs.some((notification) => !notification.read),
-    ),
+    hasUnread: unreadCount > 0,
+    unreadCount,
     onRead: async (id?: number) => await readMutation.mutateAsync(id),
   }
 }

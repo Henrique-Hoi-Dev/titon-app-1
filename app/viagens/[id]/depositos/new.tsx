@@ -25,7 +25,6 @@ import api from '~/src/services/api'
 
 const validationSchema = Yup.object().shape({
   type_transaction: Yup.string().required('Campo obrigatório'),
-  local: Yup.string().required('Campo obrigatório'),
   type_bank: Yup.string().required('Campo obrigatório'),
   value: Yup.string().required('Campo obrigatório'),
   state: Yup.string().required('Campo obrigatório'),
@@ -136,11 +135,10 @@ export default function App() {
         return
       }
 
-      const { state, city, ...restValues } = values
+      const { state: _state, city: _city, ...restValues } = values
       const data = {
         ...restValues,
         value: Number(values.value.replace(/\D/g, '')),
-        local: `${city} - ${state}`,
       }
 
       if (!activeFreight) {
@@ -211,6 +209,7 @@ export default function App() {
                 onSelect={(item) => {
                   handleChange('state')(item?.value ?? '')
                   setFieldValue('city', '')
+                  setFieldValue('local', '')
                 }}
                 placeholder="Selecione o estado"
                 label="Estado"
@@ -230,7 +229,12 @@ export default function App() {
                         value: city.name,
                       })) ?? []
                   }
-                  onSelect={(item) => handleChange('city')(item?.value ?? '')}
+                  onSelect={(item) => {
+                    handleChange('city')(item?.value ?? '')
+                    if (item?.value && values.state) {
+                      setFieldValue('local', `${item.value} - ${values.state}`)
+                    }
+                  }}
                   placeholder="Selecione a cidade"
                   label="Cidade"
                   error={getError(errors, 'city')}
@@ -287,14 +291,10 @@ export default function App() {
 
           {step === 3 && (
             <View className="mt-8">
-              {values.city && values.state && (
-                <>
-                  <Text className="font-medium ">Local</Text>
-                  <Text className="text-lg font-medium text-primary-600">
-                    {values.city} - {values.state}
-                  </Text>
-                </>
-              )}
+              <Text className="font-medium ">Local</Text>
+              <Text className="text-lg font-medium text-primary-600">
+                {values.local}
+              </Text>
               <Text className="mt-8 font-medium">Tipo de transferência</Text>
               <Text className="text-lg font-medium text-primary-600">
                 {

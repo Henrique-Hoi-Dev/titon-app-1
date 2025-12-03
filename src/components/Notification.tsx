@@ -38,9 +38,9 @@ export default function Notification({ item }: { item: NotificationType }) {
       className={`p-4 ${item.read ? 'bg-white' : 'bg-primary-50'} `}
       onPress={() => onRead(item.id)}
     >
-      <View className="flex-1">
+      <View className={`flex-1 ${!item.read ? 'pl-4' : ''}`}>
         {!item.read && (
-          <View className="absolute left-0 top-4 bottom-4 w-1 bg-primary-500 rounded-r" />
+          <View className="absolute left-0 top-0 bottom-0 w-1 bg-primary-500" />
         )}
         <View className="mb-2">
           <Text className={`text-base font-bold ${titleColor}`}>

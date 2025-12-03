@@ -176,15 +176,15 @@ Este projeto está sob a licença [MIT](LICENSE).
 
 ## 👨‍💻 Desenvolvedores
 
-- **Equipe Titon** - Desenvolvimento e manutenção
+- **Equipe Logbook** - Desenvolvimento e manutenção
 
 ## 📞 Suporte
 
 Para suporte e dúvidas:
 
-- 📧 Email: suporte@titon.com
+- 📧 Email: suporte@logbook.com
 - 📱 App: Abra o aplicativo e vá em Configurações > Suporte
-- 🌐 Website: [www.titon.com](https://www.titon.com)
+- 🌐 Website: [www.logbook.com](https://www.logbook.com)
 
 ## 🔄 Atualizações
 

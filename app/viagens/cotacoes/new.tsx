@@ -7,7 +7,9 @@ import * as Yup from 'yup'
 import Feedback from '~/src/components/Layout/Feedback/'
 import { useEffect, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { Freight } from '~/src/hooks'
+import { Freight } from '~/src/types/freight'
+import { useFinancialStatement } from '~/src/hooks/useFinancialStatement'
+import { useFreight } from '~/src/hooks/useFreight'
 import Progress from '~/src/components/Progress'
 import Card from '~/src/components/Card'
 import Divider from '~/src/components/Divider'
@@ -15,16 +17,37 @@ import IconButton from '~/src/components/IconButton'
 import { getError, numberMask } from '~/src/utils/forms'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import api from '~/src/services/api'
+import { Data } from '~/src/services/types'
 import { Masks } from 'react-native-mask-input'
-import { Stringable } from '~/src/@types/utils'
+type FreightFormValues = {
+  start_freight_city: string
+  end_freight_city: string
+  start_freight_state: string
+  end_freight_state: string
+  location_of_the_truck: string
+  location_state: string
+  location_city: string
+  contractor: string
+  truck_current_km: string
+  liter_of_fuel_per_km: string
+  preview_tonne: string
+  value_tonne: string
+  preview_value_diesel: string
+  distance?: string
+  duration?: string
+  status?: string
+}
 
 export const validationSchema = {
   1: Yup.object().shape({
+    start_freight_state: Yup.string().required('Campo obrigatório'),
     start_freight_city: Yup.string().required('Campo obrigatório'),
-    final_freight_city: Yup.string().required('Campo obrigatório'),
+    end_freight_state: Yup.string().required('Campo obrigatório'),
+    end_freight_city: Yup.string().required('Campo obrigatório'),
   }),
   2: Yup.object().shape({
-    location_of_the_truck: Yup.string().required('Campo obrigatório'),
+    location_state: Yup.string().required('Campo obrigatório'),
+    location_city: Yup.string().required('Campo obrigatório'),
     truck_current_km: Yup.number().required('Campo obrigatório'),
     liter_of_fuel_per_km: Yup.number().required('Campo obrigatório'),
   }),
@@ -59,6 +82,12 @@ export default function App() {
   )
   const [showFeedback, setShowFeedback] = useState(false)
   const queryClient = useQueryClient()
+  const { data: financialStatement } = useFinancialStatement()
+
+  // Buscar dados do frete se houver freightId (rascunho)
+  const { data: existingFreight } = useFreight(
+    currentFreightId ? Number(currentFreightId) : 0,
+  )
 
   const {
     values,
@@ -66,28 +95,18 @@ export default function App() {
     handleChange,
     resetForm,
     setFieldError,
+    setFieldValue,
     isValid,
     validateForm,
-  } = useFormik<
-    Partial<
-      Stringable<
-        Freight,
-        | 'id'
-        | 'financial_statements_id'
-        | 'createdAt'
-        | 'updatedAt'
-        | 'status'
-        | 'is_on_the_way'
-      > & {
-        start_freight_state: string
-        final_freight_state: string
-      }
-    >
-  >({
+  } = useFormik<FreightFormValues>({
     initialValues: {
       start_freight_city: '',
-      final_freight_city: '',
+      end_freight_city: '',
+      start_freight_state: '',
+      end_freight_state: '',
       location_of_the_truck: '',
+      location_state: '',
+      location_city: '',
       contractor: '',
       truck_current_km: '',
       liter_of_fuel_per_km: '',
@@ -111,7 +130,7 @@ export default function App() {
           name: string
           uf: string
         }[]
-      }>('/states')
+      }>('/driver/states')
       return response.data.data
     },
   })
@@ -127,42 +146,76 @@ export default function App() {
             uf: string
           }
         }[]
-      }>(`/citis`)
+      }>(`/driver/cities`)
 
       return response.data.data
     },
   })
 
   const mutation = useMutation({
-    mutationFn: async (
-      values: Partial<
-        Freight & {
-          start_freight_state: string
-          final_freight_state: string
-        }
-      >,
-    ) => {
-      const apiMethod = !currentFreightId ? api.post : api.patch
+    mutationFn: async (values: FreightFormValues) => {
+      const apiMethod = !currentFreightId ? api.post : api.put
 
-      if (step === totalSteps) {
-        values.status = 'PENDING'
+      // No step 1, enviar apenas start_freight_city e end_freight_city (já concatenados com estado)
+      let payload: Data
+      if (step === 1) {
+        const startCity = `${values.start_freight_city} ${values.start_freight_state?.toUpperCase()}`
+        const endCity = `${values.end_freight_city} ${values.end_freight_state?.toUpperCase()}`
+        payload = {
+          start_freight_city: startCity,
+          end_freight_city: endCity,
+        }
+      } else {
+        payload = {} as Data
+
+        // No step 2, concatena cidade + estado para truck_location
+        if (step === 2 && values.location_city && values.location_state) {
+          payload.truck_location = `${values.location_city} ${values.location_state.toUpperCase()}`
+        } else if (values.location_of_the_truck) {
+          payload.truck_location = values.location_of_the_truck
+        }
+
+        // contractor_name só é enviado no step 3
+        if (step === 3) {
+          payload.contractor_name = values.contractor
+        }
+
+        if (values.liter_of_fuel_per_km) {
+          payload.fuel_avg_per_km = Number(
+            values.liter_of_fuel_per_km.replace(/\D/g, ''),
+          )
+        }
+        if (values.preview_tonne) {
+          payload.estimated_tonnage = Number(
+            values.preview_tonne.replace(/\D/g, ''),
+          )
+        }
+        if (values.value_tonne) {
+          payload.ton_value = Number(values.value_tonne.replace(/\D/g, ''))
+        }
+        if (values.preview_value_diesel) {
+          payload.estimated_fuel_cost = Number(
+            values.preview_value_diesel.replace(/\D/g, ''),
+          )
+        }
+        if (values.truck_current_km) {
+          payload.truck_current_km = Number(
+            values.truck_current_km.replace(/\D/g, ''),
+          )
+        }
+
+        // No último passo, enviar status como PENDING
+        if (step === totalSteps) {
+          payload.status = 'PENDING'
+        }
       }
 
-      values.start_freight_city = `${
-        values.start_freight_city
-      } ${values.start_freight_state?.toLocaleUpperCase()}`
-
-      values.final_freight_city = `${
-        values.final_freight_city
-      } ${values.final_freight_state?.toLocaleUpperCase()}`
+      const url = `/v1/driver/freight${currentFreightId ? `/${currentFreightId}` : ''}`
 
       const response = await apiMethod<{
         data: Freight
         errors?: Record<keyof Freight, string>
-      }>(
-        `/v1/driver/freight${currentFreightId ? `/${currentFreightId}` : ''}`,
-        values,
-      )
+      }>(url, payload)
 
       if (response.status === 201 || response.status === 200) {
         return response.data.data
@@ -184,15 +237,19 @@ export default function App() {
     },
     onSuccess: (data) => {
       if (step === 1) {
-        if (!data.duration || !data.distance) {
+        if (!data.routeDuration || !data.routeDistanceKm) {
+          // Quando cria (step 1), busca sem financial_id
           api
             .get<{
               data: Freight
-            }>(`/v1/driver/freight/${data.id}`)
+            }>(`/v1/driver/freight/${data.id}/${financialStatement?.id}`)
             .then((response) => {
-              handleChange('distance')(response.data.data.distance)
-              handleChange('duration')(response.data.data.duration)
+              handleChange('distance')(response.data.data.routeDistanceKm)
+              handleChange('duration')(response.data.data.routeDuration)
             })
+        } else {
+          handleChange('distance')(data.routeDistanceKm)
+          handleChange('duration')(data.routeDuration)
         }
         setCurrentFreightId(data.id.toString())
       }
@@ -219,6 +276,103 @@ export default function App() {
   useEffect(() => {
     validateForm()
   }, [step, validateForm])
+
+  // Função para extrair cidade e estado de uma string "Cidade UF"
+  const parseCityAndState = (cityState: string) => {
+    const parts = cityState.trim().split(' ')
+    if (parts.length >= 2) {
+      const state = parts[parts.length - 1]
+      const city = parts.slice(0, -1).join(' ')
+      return { city, state }
+    }
+    return { city: cityState, state: '' }
+  }
+
+  // Preencher formulário quando houver frete existente (rascunho)
+  useEffect(() => {
+    if (existingFreight && existingFreight.status === 'DRAFT') {
+      // Step 1: Cidades de origem e destino
+      if (existingFreight.startFreightCity) {
+        const start = parseCityAndState(existingFreight.startFreightCity)
+        setFieldValue('start_freight_city', start.city)
+        setFieldValue('start_freight_state', start.state)
+      }
+      if (existingFreight.endFreightCity) {
+        const end = parseCityAndState(existingFreight.endFreightCity)
+        setFieldValue('end_freight_city', end.city)
+        setFieldValue('end_freight_state', end.state)
+      }
+      if (existingFreight.routeDistanceKm) {
+        setFieldValue('distance', existingFreight.routeDistanceKm)
+      }
+      if (existingFreight.routeDuration) {
+        setFieldValue('duration', existingFreight.routeDuration)
+      }
+
+      // Step 2: Informações do veículo
+      if (existingFreight.truckLocation) {
+        const location = parseCityAndState(existingFreight.truckLocation)
+        setFieldValue('location_city', location.city)
+        setFieldValue('location_state', location.state)
+      }
+      if (existingFreight.truckCurrentKm) {
+        setFieldValue(
+          'truck_current_km',
+          existingFreight.truckCurrentKm.toString(),
+        )
+      }
+      if (existingFreight.fuelAvgPerKm) {
+        setFieldValue(
+          'liter_of_fuel_per_km',
+          existingFreight.fuelAvgPerKm.toString(),
+        )
+      }
+
+      // Step 3: Informações da carga
+      if (existingFreight.contractorName) {
+        setFieldValue('contractor', existingFreight.contractorName)
+      }
+      if (existingFreight.estimatedTonnage) {
+        // Converter de gramas para toneladas
+        const tons = existingFreight.estimatedTonnage / 1000
+        setFieldValue('preview_tonne', tons.toString())
+      }
+      if (existingFreight.tonValue) {
+        setFieldValue('value_tonne', existingFreight.tonValue.toString())
+      }
+      if (existingFreight.estimatedFuelCost) {
+        setFieldValue(
+          'preview_value_diesel',
+          existingFreight.estimatedFuelCost.toString(),
+        )
+      }
+
+      // Determinar em qual step parar baseado nos dados preenchidos
+      if (existingFreight.startFreightCity && existingFreight.endFreightCity) {
+        if (
+          existingFreight.truckLocation &&
+          existingFreight.truckCurrentKm &&
+          existingFreight.fuelAvgPerKm
+        ) {
+          if (
+            existingFreight.contractorName &&
+            existingFreight.estimatedTonnage &&
+            existingFreight.tonValue &&
+            existingFreight.estimatedFuelCost
+          ) {
+            // Todos os dados preenchidos, ir para step 4
+            setStep(4)
+          } else {
+            // Step 2 completo, ir para step 3
+            setStep(3)
+          }
+        } else {
+          // Step 1 completo, ir para step 2
+          setStep(2)
+        }
+      }
+    }
+  }, [existingFreight, setFieldValue])
 
   return (
     <Layout
@@ -337,7 +491,7 @@ export default function App() {
               <Select
                 required
                 searchable
-                value={values.final_freight_state}
+                value={values.end_freight_state}
                 data={
                   states.data?.map((state) => ({
                     label: state.name,
@@ -345,22 +499,22 @@ export default function App() {
                   })) ?? []
                 }
                 onSelect={(item) =>
-                  handleChange('final_freight_state')(item?.value ?? '')
+                  handleChange('end_freight_state')(item?.value ?? '')
                 }
                 label="Para onde você quer ir"
                 placeholder="Selecione o estado"
-                error={getError(errors, 'final_freight_state')}
+                error={getError(errors, 'end_freight_state')}
                 loading={states.isFetching}
               />
-              {values.final_freight_state && (
+              {values.end_freight_state && (
                 <Select
                   required
                   searchable
-                  value={values.final_freight_city as string}
+                  value={values.end_freight_city as string}
                   data={
                     cities.data
                       ?.filter(
-                        (city) => city.states.uf === values.final_freight_state,
+                        (city) => city.states.uf === values.end_freight_state,
                       )
                       .map((city) => ({
                         label: city.name,
@@ -368,10 +522,10 @@ export default function App() {
                       })) ?? []
                   }
                   onSelect={(item) =>
-                    handleChange('final_freight_city')(item?.value ?? '')
+                    handleChange('end_freight_city')(item?.value ?? '')
                   }
                   placeholder="Selecione a cidade"
-                  error={getError(errors, 'final_freight_city')}
+                  error={getError(errors, 'end_freight_city')}
                   loading={cities.isFetching}
                 />
               )}
@@ -398,13 +552,47 @@ export default function App() {
                   label="Média do caminhão"
                   error={getError(errors, 'liter_of_fuel_per_km')}
                 />
-                <TextInput
+                <Select
                   required
-                  value={values.location_of_the_truck}
-                  onChangeText={handleChange('location_of_the_truck')}
+                  searchable
+                  value={values.location_state}
+                  data={
+                    states.data?.map((state) => ({
+                      label: state.name,
+                      value: state.uf,
+                    })) ?? []
+                  }
+                  onSelect={(item) =>
+                    handleChange('location_state')(item?.value ?? '')
+                  }
+                  placeholder="Selecione o estado"
                   label="Localização do caminhão"
-                  error={getError(errors, 'location_of_the_truck')}
+                  error={getError(errors, 'location_state')}
+                  loading={states.isFetching}
                 />
+                {values.location_state && (
+                  <Select
+                    required
+                    searchable
+                    value={values.location_city as string}
+                    data={
+                      cities.data
+                        ?.filter(
+                          (city) => city.states.uf === values.location_state,
+                        )
+                        .map((city) => ({
+                          label: city.name,
+                          value: city.name,
+                        })) ?? []
+                    }
+                    onSelect={(item) =>
+                      handleChange('location_city')(item?.value ?? '')
+                    }
+                    placeholder="Selecione a cidade"
+                    error={getError(errors, 'location_city')}
+                    loading={cities.isFetching}
+                  />
+                )}
               </Card>
               <Card className="mt-8 space-y-4">
                 <View className="flex flex-row justify-between">
@@ -486,7 +674,7 @@ export default function App() {
               </Text>
               <Text className="mt-8 font-medium ">Destino</Text>
               <Text className="text-lg font-medium text-primary-600">
-                {values.final_freight_city}
+                {values.end_freight_city}
               </Text>
               <Divider className="my-6 bg-zinc-300" />
               <Text className="font-medium ">Transportadora</Text>
@@ -513,29 +701,7 @@ export default function App() {
             className="mt-4"
             loading={mutation.isPending}
             disabled={!isValid}
-            onPress={() =>
-              mutation.mutateAsync({
-                ...values,
-                tons_loaded: undefined,
-                toll_value: undefined,
-                truck_km_completed_trip: undefined,
-                truck_current_km: values.truck_current_km
-                  ? Number(values.truck_current_km.replace(/\D/g, ''))
-                  : undefined,
-                liter_of_fuel_per_km: values.liter_of_fuel_per_km
-                  ? Number(values.liter_of_fuel_per_km.replace(/\D/g, ''))
-                  : undefined,
-                preview_tonne: values.preview_tonne
-                  ? Number(values.preview_tonne.replace(/\D/g, ''))
-                  : undefined,
-                value_tonne: values.value_tonne
-                  ? Number(values.value_tonne.replace(/\D/g, ''))
-                  : undefined,
-                preview_value_diesel: values.preview_value_diesel
-                  ? Number(values.preview_value_diesel.replace(/\D/g, ''))
-                  : undefined,
-              })
-            }
+            onPress={() => mutation.mutateAsync(values)}
           >
             {step === totalSteps ? 'Finalizar' : 'Continuar'}
           </Button>

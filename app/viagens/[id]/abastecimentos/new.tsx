@@ -1,6 +1,6 @@
 import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Button, MaskedInput, TextInput } from '~/src/components/Form'
+import { Button, MaskedInput, Select, TextInput } from '~/src/components/Form'
 import { Header, Layout } from '~/src/components/Layout'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
@@ -18,12 +18,17 @@ import UploadInput, {
 } from '~/src/components/Form/Inputs/UploadInput'
 import UploadTips from '~/src/components/UploadTips'
 import { ErrorKey, getErrorMessage } from '~/src/utils/errors'
+import { useQuery } from '@tanstack/react-query'
+import api from '~/src/services/api'
+import { getError } from '~/src/utils/forms'
 
 const validationSchema = Yup.object().shape({
   name_establishment: Yup.string().required('Campo obrigatório'),
   value_fuel: Yup.string().required('Campo obrigatório'),
   liters_fuel: Yup.string().required('Campo obrigatório'),
   total_nota_value: Yup.string().required('Campo obrigatório'),
+  state: Yup.string().required('Campo obrigatório'),
+  city: Yup.string().required('Campo obrigatório'),
 })
 
 export default function App() {
@@ -43,10 +48,41 @@ export default function App() {
   const { id } = useLocalSearchParams<{
     id: string
   }>()
-  const { data } = useFinancialStatement()
+  const { data: _financialStatement } = useFinancialStatement()
   const { data: activeFreight } = useFreight(Number(id))
 
-  const { store } = useRestocks(data?.id || 0, {
+  const states = useQuery({
+    queryKey: ['states'],
+    queryFn: async () => {
+      const response = await api.get<{
+        data: {
+          id: number
+          name: string
+          uf: string
+        }[]
+      }>('/driver/states')
+      return response.data.data
+    },
+  })
+
+  const cities = useQuery({
+    queryKey: ['cities'],
+    queryFn: async () => {
+      const response = await api.get<{
+        data: {
+          id: number
+          name: string
+          states: {
+            uf: string
+          }
+        }[]
+      }>(`/driver/cities`)
+
+      return response.data.data
+    },
+  })
+
+  const { store } = useRestocks(0, {
     onSuccess: async (data) => {
       await uploadInvoice.mutateAsync({
         id: data.id,
@@ -83,12 +119,15 @@ export default function App() {
     handleSubmit,
     isValid,
     validateForm,
+    setFieldValue,
   } = useFormik({
     initialValues: {
       name_establishment: '',
       value_fuel: '',
       liters_fuel: '',
       total_nota_value: '',
+      state: '',
+      city: '',
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -97,11 +136,13 @@ export default function App() {
         return
       }
 
+      const { state, city, ...restValues } = values
       const data = {
-        ...values,
+        ...restValues,
         value_fuel: Number(values.value_fuel.replace(/\D/g, '')),
         liters_fuel: Number(values.liters_fuel),
         total_nota_value: Number(values.total_nota_value.replace(/\D/g, '')),
+        city: `${city} - ${state}`,
       }
 
       if (!activeFreight) {
@@ -188,6 +229,45 @@ export default function App() {
                 onChangeText={handleChange('total_nota_value')}
                 keyboardType="numeric"
               />
+              <Select
+                required
+                searchable
+                value={values.state}
+                data={
+                  states.data?.map((state) => ({
+                    label: state.name,
+                    value: state.uf,
+                  })) ?? []
+                }
+                onSelect={(item) => {
+                  handleChange('state')(item?.value ?? '')
+                  setFieldValue('city', '')
+                }}
+                placeholder="Selecione o estado"
+                label="Estado"
+                error={getError(errors, 'state')}
+                loading={states.isFetching}
+              />
+              {values.state && (
+                <Select
+                  required
+                  searchable
+                  value={values.city}
+                  data={
+                    cities.data
+                      ?.filter((city) => city.states.uf === values.state)
+                      .map((city) => ({
+                        label: city.name,
+                        value: city.name,
+                      })) ?? []
+                  }
+                  onSelect={(item) => handleChange('city')(item?.value ?? '')}
+                  placeholder="Selecione a cidade"
+                  label="Cidade"
+                  error={getError(errors, 'city')}
+                  loading={cities.isFetching}
+                />
+              )}
             </Card>
           )}
 
@@ -223,6 +303,14 @@ export default function App() {
               <Text className="text-lg font-medium text-primary-600">
                 {values.total_nota_value}
               </Text>
+              {values.city && values.state && (
+                <>
+                  <Text className="mt-8 font-medium">Cidade</Text>
+                  <Text className="text-lg font-medium text-primary-600">
+                    {values.city} - {values.state}
+                  </Text>
+                </>
+              )}
               <Text className="mt-8 font-medium mb-2">Comprovante</Text>
               <Card className={`relative shadow-sm`}>
                 <Image

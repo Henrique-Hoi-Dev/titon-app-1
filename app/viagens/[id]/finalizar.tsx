@@ -24,7 +24,7 @@ export default function App() {
   const mutation = useMutation({
     mutationFn: async () => {
       const response = await api.put(`/v1/driver/freight/finished-trip/${id}`, {
-        truck_km_completed_trip: km,
+        truck_km_end_trip: Number(km.replace(/\D/g, '')),
       })
 
       if (response.status !== 200) {

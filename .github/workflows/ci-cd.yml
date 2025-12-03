@@ -1,4 +1,4 @@
-name: CI/CD iOS app - Staging
+name: CI/CD Mobile App - iOS & Android
 
 on:
   push:
@@ -240,7 +240,47 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-  deploy:
+  build-android:
+    needs: check-code-quality
+    if: github.event_name == 'push' && contains('refs/heads/staging,refs/heads/master', github.ref)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          if output=$(yarn install --frozen-lockfile 2>&1); then
+            echo "Dependencies installed successfully"
+          else
+            if echo "$output" | grep -q "lockfile needs to be updated"; then
+              echo "Lockfile needs update, installing without --frozen-lockfile..."
+              yarn install
+            else
+              echo "$output"
+              exit 1
+            fi
+          fi
+
+      - name: Install Expo & EAS
+        run: |
+          npm install -g expo-cli eas-cli
+
+      - name: Build Android app
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            eas build --platform android --non-interactive --profile staging --clear-cache
+          elif [[ "${GITHUB_REF_NAME}" == "master" ]]; then
+            eas build --platform android --non-interactive --profile production --clear-cache
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+  deploy-ios:
     needs: build-ios
     if: github.event_name == 'push' && contains('refs/heads/staging,refs/heads/master', github.ref)
     runs-on: ubuntu-latest
@@ -283,8 +323,60 @@ jobs:
           EXPO_APPLE_APP_STORE_ISSUER_ID: ${{ secrets.APPLE_APP_STORE_ISSUER_ID }}
           EXPO_APPLE_APP_STORE_KEY: ${{ secrets.APPLE_APP_STORE_KEY_CONTENT }}
 
+  deploy-android:
+    needs: build-android
+    if: github.event_name == 'push' && contains('refs/heads/staging,refs/heads/master', github.ref)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          if output=$(yarn install --frozen-lockfile 2>&1); then
+            echo "Dependencies installed successfully"
+          else
+            if echo "$output" | grep -q "lockfile needs to be updated"; then
+              echo "Lockfile needs update, installing without --frozen-lockfile..."
+              yarn install
+            else
+              echo "$output"
+              exit 1
+            fi
+          fi
+
+      - name: Install Expo & EAS
+        run: |
+          npm install -g expo-cli eas-cli
+
+      - name: Submit Android app to Google Play Store
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "staging" ]]; then
+            eas submit --platform android --non-interactive --profile staging
+          elif [[ "${GITHUB_REF_NAME}" == "master" ]]; then
+            eas submit --platform android --non-interactive --profile production
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_GOOGLE_SERVICE_ACCOUNT_KEY_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY_JSON }}
+
   notify-discord:
-    needs: [lint, style, test, build, check-code-quality, build-ios, deploy]
+    needs:
+      [
+        lint,
+        style,
+        test,
+        build,
+        check-code-quality,
+        build-ios,
+        build-android,
+        deploy-ios,
+        deploy-android,
+      ]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -312,17 +404,19 @@ jobs:
           }
 
           {
-            echo "🔔 **CI/CD Front - Staging**"
+            echo "🔔 **CI/CD Mobile App - iOS & Android**"
             echo "**Branch**: \`${{ github.ref_name }}\`"
             echo "**Autor**: \`${{ github.actor }}\`"
             echo "**Status por etapa:**"
             echo "- 🧹 Lint: $(format_status '${{ needs.lint.result }}')"
             echo "- 🎨 Style: $(format_status '${{ needs.style.result }}')"
             echo "- 🧪 Test: $(format_status '${{ needs.test.result }}')"
-            echo "- 🏗️ Build: $(format_status '${{ needs.build.result }}')"
+            echo "- 🏗️ Build Web: $(format_status '${{ needs.build.result }}')"
             echo "- ✅ Code Quality: $(format_status '${{ needs.check-code-quality.result }}')"
             echo "- 📱 Build iOS: $(format_status '${{ needs.build-ios.result || 'skipped' }}')"
-            echo "- 🚀 Deploy: $(format_status '${{ needs.deploy.result || 'skipped' }}')"
+            echo "- 🤖 Build Android: $(format_status '${{ needs.build-android.result || 'skipped' }}')"
+            echo "- 🚀 Deploy iOS: $(format_status '${{ needs.deploy-ios.result || 'skipped' }}')"
+            echo "- 🚀 Deploy Android: $(format_status '${{ needs.deploy-android.result || 'skipped' }}')"
             echo "👉 [Ver execução](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
           } > message.txt
 

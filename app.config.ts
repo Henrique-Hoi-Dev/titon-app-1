@@ -1,3 +1,6 @@
+// Plugin customizado para remover enableBundleCompression (não suportado no RN 0.74+)
+import withRemoveBundleCompression from './plugins/withRemoveBundleCompression'
+
 const IS_DEV = process.env.EXPO_PUBLIC_APP_ENV !== 'production'
 
 const ONE_SIGNAL_IOS_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_IOS_APP_ID
@@ -7,11 +10,11 @@ const ONE_SIGNAL_ANDROID_APP_ID =
 export default {
   expo: {
     name: process.env.EXPO_PUBLIC_APP_TITLE,
-    slug: 'titon-app',
+    slug: 'logbook-app',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
-    scheme: 'logbook',
+    scheme: 'logbook-app',
     userInterfaceStyle: 'automatic',
     splash: {
       image: './assets/images/splash.png',
@@ -42,6 +45,20 @@ export default {
           mode: IS_DEV ? 'development' : 'production',
         },
       ],
+      [
+        'expo-build-properties',
+        {
+          android: {
+            // Expo SDK 53 usa Kotlin 2.0.x por padrão
+            // Esta configuração garante que não seja usada versão antiga (1.9.24)
+            kotlinVersion: '2.0.21',
+          },
+        },
+      ],
+      // Plugin para remover enableBundleCompression (não suportado no RN 0.74+)
+      // IMPORTANTE: Deve ser o último plugin para garantir que remove a propriedade
+      // mesmo se outros plugins a configurarem antes
+      withRemoveBundleCompression,
     ],
     experiments: {
       typedRoutes: true,
@@ -51,7 +68,7 @@ export default {
         origin: false,
       },
       eas: {
-        projectId: 'c89d0a1b-eaba-4e67-9087-d8a01c94c0e1',
+        projectId: 'af06cebf-1dc9-4161-bf46-f1f2625a0b95',
       },
       oneSignalAppId: {
         ios: ONE_SIGNAL_IOS_APP_ID,

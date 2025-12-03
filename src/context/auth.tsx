@@ -21,10 +21,23 @@ export type User = {
   name: string
   number_cnh: string | null
   percentage: number | null
-  valid_cnh: boolean | null
+  valid_cnh: string | null
   value_fix: number
   email?: string | null
   phone?: string | null
+  date_valid_mopp?: string | null
+  date_valid_nr20?: string | null
+  date_valid_nr35?: string | null
+  date_admission?: string | null
+  gender?: string | null
+  date_birthday?: string | null
+  address?: {
+    street?: string | null
+    number?: string | null
+    complement?: string | null
+    state?: string | null
+    city?: string | null
+  } | null
 }
 
 export type AuthResponse = {
@@ -41,7 +54,7 @@ export type AuthContextType = {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
-  getUser: (token: string) => Promise<void>
+  getUser: (token?: string | null) => Promise<void>
   user?: User
   token?: string
   setToken: (token: string) => void
@@ -50,6 +63,7 @@ export type AuthContextType = {
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
 export function AuthProvider(props: PropsWithChildren) {
+  const router = useRouter()
   const [user, setUser] = useState<User>()
   const [token, setToken] = useState<string>()
   const [loading, setLoading] = useState<boolean>(false)
@@ -59,17 +73,23 @@ export function AuthProvider(props: PropsWithChildren) {
     await AsyncStorage.removeItem(`@${config.appName}_token`)
     setToken(undefined)
     setUser(undefined)
-    // router.replace('/sign-in')
-  }, [])
+    router.replace('/(auth)/sign-in')
+  }, [router])
 
   const handleProfile = useCallback(
     async (token?: string | null) => {
       setLoading(true)
       try {
+        // Se o token for null ou undefined, não passa no header
+        // O Api.get já busca o token do AsyncStorage automaticamente
         const response = await Api.get<ProfileResponse>('/v1/driver/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          ...(token
+            ? {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            : {}),
         })
 
         if (response.status === 401) {

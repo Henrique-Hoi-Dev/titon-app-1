@@ -39,7 +39,7 @@ export default function Index() {
         </Text>
         <Pressable
           disabled={loading}
-          onPress={() => router.navigate('/viagens/')}
+          onPress={() => router.navigate('/profile')}
           className="absolute flex-row items-center self-center w-full px-4 py-5 mt-8 bg-white rounded-lg top-12 shadow-sm left-0 right-0"
         >
           <View className="items-center justify-center w-12 h-12 mr-2 rounded-full bg-primary-500">
@@ -54,36 +54,63 @@ export default function Index() {
       </Header>
 
       <ScrollView className="w-full px-4 pt-12">
-        {((data && !loading) || loading) && (
+        {loading && (
+          <View className="w-full bg-white shadow-2xl rounded-2xl">
+            <View className="px-4 pt-4 pb-4">
+              <Text className="text-sm font-light text-black">
+                Carregando...
+              </Text>
+            </View>
+          </View>
+        )}
+        {!loading && data && (
           <View className="w-full bg-white shadow-2xl  rounded-2xl">
             <View className="px-4 pt-4">
-              <Text className="text-sm font-semibold text-black ">
+              <Text className="text-lg font-bold text-black ">
                 Ficha {data?.id}
               </Text>
               <View className="w-full h-4" />
-              <Text className="text-xs font-light text-black ">
-                Data de início: {data?.start_date.toLocaleDateString('pt-BR')}
+              <Text className="text-xs text-black ">
+                <Text className="font-semibold">Data de início:</Text>{' '}
+                <Text className="font-light">
+                  {data?.start_date.toLocaleDateString('pt-BR')}
+                </Text>
+              </Text>
+              <View className="w-full h-2" />
+              <Text className="text-xs text-black ">
+                <Text className="font-semibold">Placa do caminhão:</Text>{' '}
+                <Text className="font-light">{data?.truck.truck_board}</Text>
               </Text>
               <View className="w-full h-1" />
-              <Text className="text-xs font-light text-black ">
-                {data?.cart_board}
+              <Text className="text-xs text-black ">
+                <Text className="font-semibold">Placa da carreta:</Text>{' '}
+                <Text className="font-light">{data?.cart.cart_board}</Text>
               </Text>
             </View>
             <View className="w-full h-px my-4 bg-zinc-200" />
             <Pressable
-              onPress={() => router.navigate('/viagens/')}
+              onPress={() => router.navigate('/viagens')}
               className="flex-row items-center justify-between w-full px-4 pb-4"
             >
               <Text className="text-sm font-semibold text-primary-500 ">
                 Visualizar
               </Text>
               <IconButton
-                onPress={() => router.navigate('/viagens/')}
+                onPress={() => router.navigate('/viagens')}
                 color={colorScheme === 'dark' ? 'white' : 'black'}
                 icon="chevron-right"
                 size={20}
               />
             </Pressable>
+          </View>
+        )}
+        {!loading && !data && (
+          <View className="w-full bg-white shadow-2xl rounded-2xl">
+            <View className="px-4 pt-4 pb-4">
+              <Text className="text-sm font-light text-black text-center">
+                Ficha não encontrada
+              </Text>
+            </View>
           </View>
         )}
       </ScrollView>

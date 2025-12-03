@@ -10,6 +10,7 @@ export type TabItemProps = {
   label: string
   active: boolean
   showBadge?: boolean
+  badgeCount?: number
 }
 
 export default function TabItem({
@@ -20,6 +21,7 @@ export default function TabItem({
   label,
   active,
   showBadge,
+  badgeCount,
 }: TabItemProps) {
   return (
     <View className="justify-center items-center flex-1">
@@ -30,6 +32,7 @@ export default function TabItem({
         label={label}
         color={active ? '#3975EA' : '#BBB'}
         showBadge={showBadge}
+        badgeCount={badgeCount}
       />
       {active && (
         <View className="w-1.5 h-1.5 bg-primary rounded-full absolute -bottom-3"></View>

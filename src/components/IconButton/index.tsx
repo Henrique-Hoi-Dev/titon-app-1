@@ -14,6 +14,7 @@ export type IconButtonProps = TouchableOpacityProps & {
   size?: number
   label?: string
   showBadge?: boolean
+  badgeCount?: number
 }
 
 const IconButton = ({
@@ -23,8 +24,11 @@ const IconButton = ({
   className,
   label,
   showBadge,
+  badgeCount,
   ...props
 }: IconButtonProps) => {
+  const hasBadge = showBadge || (badgeCount !== undefined && badgeCount > 0)
+
   return (
     <TouchableOpacity
       className={`${className} flex items-center justify-center`}
@@ -33,8 +37,16 @@ const IconButton = ({
       <View className="relative items-center">
         <MaterialCommunityIcons name={icon} size={size} color={color} />
 
-        {showBadge && (
-          <View className="w-1.5 h-1.5 bg-red-500 rounded-full absolute -top-1 -right-1" />
+        {hasBadge && (
+          <View className="absolute -top-1 -right-1 bg-red-500 rounded-full items-center justify-center min-w-[18px] h-[18px] px-1">
+            {badgeCount !== undefined && badgeCount > 0 ? (
+              <Text className="text-white text-[10px] font-bold">
+                {badgeCount > 99 ? '99+' : badgeCount}
+              </Text>
+            ) : (
+              <View className="w-1.5 h-1.5 bg-white rounded-full" />
+            )}
+          </View>
         )}
       </View>
       {label && (

@@ -8,33 +8,109 @@ import {
 import { User, useAuth } from '~/src/context/auth'
 import { getComissao, getFaturamento } from '~/src/utils'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import Button from '~/src/components/Button'
 import { router } from 'expo-router'
 import { Skeleton } from 'moti/skeleton'
 import { Freight } from '~/src/types'
-import { useRestocks, useTravels } from '~/src/hooks'
+import Config from '~/src/config'
+import { useEffect, useState } from 'react'
 
 type Props = {
   item: Freight
   loading?: boolean
 }
 
+// Helper para verificar se o arquivo tem dados (não é objeto vazio)
+const hasFile = (file: { uuid?: string; name?: string } | null | undefined) => {
+  if (!file) return false
+  // Verifica se tem pelo menos uuid ou name (não é objeto vazio)
+  return !!(file.uuid || file.name)
+}
+
+// Helper para verificar se todos os detalhes da carga estão completos
+const hasDetailsComplete = (item: Freight | null | undefined) => {
+  if (!item) return false
+  // Verifica se todos os campos do formulário estão preenchidos
+  // tonsLoaded é obrigatório, os outros são opcionais mas devem estar preenchidos para mostrar completo
+  const hasTonsLoaded =
+    item.tonsLoaded !== null &&
+    item.tonsLoaded !== undefined &&
+    item.tonsLoaded > 0
+  const hasTollCost =
+    item.tollCost !== null && item.tollCost !== undefined && item.tollCost > 0
+  const hasDischarge =
+    item.discharge !== null &&
+    item.discharge !== undefined &&
+    item.discharge >= 0
+  const hasBreakTon =
+    item.breakTon !== null && item.breakTon !== undefined && item.breakTon >= 0
+  const hasInsurance =
+    item.insurance !== null &&
+    item.insurance !== undefined &&
+    item.insurance > 0
+  const hasTaxaAdm =
+    item.taxaAdm !== null && item.taxaAdm !== undefined && item.taxaAdm > 0
+
+  // Retorna true apenas se todos os campos estiverem preenchidos
+  return (
+    hasTonsLoaded &&
+    hasTollCost &&
+    hasDischarge &&
+    hasBreakTon &&
+    hasInsurance &&
+    hasTaxaAdm
+  )
+}
+
+// Helper para buscar URL da imagem
+const getImageUrl = (
+  file: { uuid?: string; name?: string } | null | undefined,
+) => {
+  if (!hasFile(file) || !file?.uuid) return null
+  return `${Config.apiUrl}/v1/driver/freight/search-documents?category=documents&filename=${file.uuid}`
+}
+
 export default function Informacoes({ item, loading = false }: Props) {
   const { width } = useWindowDimensions()
   const { user } = useAuth()
+  const [, setImageUrls] = useState<{
+    ticket?: string | null
+    cte?: string | null
+    freightLetter?: string | null
+  }>({})
 
-  // Só busca dados se o item existir e não estiver em loading
-  const shouldFetch = !loading && item?.id
-  const { data: abastecimentos } = useRestocks(shouldFetch ? item.id : 0)
-  const totalAbastecimentos = abastecimentos?.reduce(
-    (acc, curr) => acc + curr.total_value_fuel / 100,
-    0,
-  )
-  const { data: despesas } = useTravels(shouldFetch ? item.id : 0)
-  const totalDespesas = despesas?.reduce(
-    (acc, curr) => acc + curr.value / 100,
-    0,
-  )
+  // Usa valores do summary se disponível, senão calcula dos arrays
+  const totalAbastecimentos = item.summary
+    ? item.summary.restockTotal / 100
+    : (item.restock ?? []).reduce(
+        (acc, curr) => acc + curr.total_value_fuel / 100,
+        0,
+      )
+  const totalDespesas = item.summary
+    ? item.summary.travelExpensesTotal / 100
+    : (item.travelExpense ?? []).reduce(
+        (acc, curr) => acc + curr.value / 100,
+        0,
+      )
+  const valorFrete = item.summary
+    ? item.summary.valueFreightTotal / 100
+    : (getFaturamento(item as Freight) ?? 0)
+  const comissao = item.summary
+    ? item.summary.driverCommission / 100
+    : getComissao((item as Freight) ?? 0, user as User)
+  const totalDeposito = item.summary
+    ? item.summary.depositMoneyTotal / 100
+    : (item.depositMoney ?? []).reduce((acc, curr) => acc + curr.value / 100, 0)
+
+  // Busca URLs das imagens quando o item carregar
+  useEffect(() => {
+    if (item) {
+      setImageUrls({
+        ticket: getImageUrl(item.imgProofTicket),
+        cte: getImageUrl(item.imgProofCte),
+        freightLetter: getImageUrl(item.imgProofFreightLetter),
+      })
+    }
+  }, [item])
 
   return (
     <ScrollView>
@@ -52,13 +128,21 @@ export default function Informacoes({ item, loading = false }: Props) {
               <Text className="text-xs text-gray-400 ">Valor do Frete</Text>
               <Skeleton show={!loading} colorMode="light">
                 <Text className="text-2xl text-emerald-500">
-                  {(getFaturamento(item as Freight) ?? 0).toLocaleString(
-                    'pt-BR',
-                    {
-                      style: 'currency',
-                      currency: 'BRL',
-                    },
-                  )}
+                  {valorFrete.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </Text>
+              </Skeleton>
+            </View>
+            <View className="px-4 py-6 mx-2 bg-white rounded-lg shadow-md ">
+              <Text className="text-xs text-gray-400 ">Comissão</Text>
+              <Skeleton show={!loading} colorMode="light">
+                <Text className="text-2xl text-emerald-500">
+                  {comissao.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
                 </Text>
               </Skeleton>
             </View>
@@ -85,13 +169,10 @@ export default function Informacoes({ item, loading = false }: Props) {
               </Skeleton>
             </View>
             <View className="px-4 py-6 ml-2 mr-4 bg-white rounded-lg shadow-md ">
-              <Text className="text-xs text-gray-400 ">Comissão</Text>
+              <Text className="text-xs text-gray-400 ">Depósito</Text>
               <Skeleton show={!loading} colorMode="light">
-                <Text className="text-2xl text-emerald-500">
-                  {getComissao(
-                    (item as Freight) ?? 0,
-                    user as User,
-                  ).toLocaleString('pt-BR', {
+                <Text className="text-2xl text-red-500">
+                  {(totalDeposito || 0).toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
                   })}
@@ -115,13 +196,18 @@ export default function Informacoes({ item, loading = false }: Props) {
                   size={24}
                 />
                 <Text className="ml-2 text-sm text-black ">
-                  Detalhes da carga
+                  Detalhes final da carga
                 </Text>
               </View>
               <View className="flex-row items-center gap-x-2">
                 <MaterialCommunityIcons
-                  name="checkbox-blank-circle-outline"
+                  name={
+                    hasDetailsComplete(item)
+                      ? 'check-circle'
+                      : 'checkbox-blank-circle-outline'
+                  }
                   size={16}
+                  color={hasDetailsComplete(item) ? 'green' : 'black'}
                 />
                 <MaterialCommunityIcons
                   name="chevron-right"
@@ -153,12 +239,12 @@ export default function Informacoes({ item, loading = false }: Props) {
               <View className="flex-row items-center gap-x-2">
                 <MaterialCommunityIcons
                   name={
-                    item?.img_proof_ticket
+                    hasFile(item?.imgProofTicket)
                       ? 'check-circle'
                       : 'checkbox-blank-circle-outline'
                   }
                   size={16}
-                  color={item?.img_proof_ticket ? 'green' : 'black'}
+                  color={hasFile(item?.imgProofTicket) ? 'green' : 'black'}
                 />
                 <MaterialCommunityIcons
                   name="chevron-right"
@@ -186,12 +272,12 @@ export default function Informacoes({ item, loading = false }: Props) {
               <View className="flex-row items-center gap-x-2">
                 <MaterialCommunityIcons
                   name={
-                    item?.img_proof_cte
+                    hasFile(item?.imgProofCte)
                       ? 'check-circle'
                       : 'checkbox-blank-circle-outline'
                   }
                   size={16}
-                  color={item?.img_proof_cte ? 'green' : 'black'}
+                  color={hasFile(item?.imgProofCte) ? 'green' : 'black'}
                 />
                 <MaterialCommunityIcons
                   name="chevron-right"
@@ -221,12 +307,14 @@ export default function Informacoes({ item, loading = false }: Props) {
               <View className="flex-row items-center gap-x-2">
                 <MaterialCommunityIcons
                   name={
-                    item?.img_proof_freight_letter
+                    hasFile(item?.imgProofFreightLetter)
                       ? 'check-circle'
                       : 'checkbox-blank-circle-outline'
                   }
                   size={16}
-                  color={item?.img_proof_freight_letter ? 'green' : 'black'}
+                  color={
+                    hasFile(item?.imgProofFreightLetter) ? 'green' : 'black'
+                  }
                 />
                 <MaterialCommunityIcons
                   name="chevron-right"
@@ -237,7 +325,6 @@ export default function Informacoes({ item, loading = false }: Props) {
             </Pressable>
           </Skeleton>
         </View>
-        {loading && <Button>Enviar</Button>}
       </View>
     </ScrollView>
   )

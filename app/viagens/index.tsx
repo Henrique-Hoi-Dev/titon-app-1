@@ -18,13 +18,15 @@ export default function App() {
 
   const faturamento = utils.getFaturamento(data?.freight || [])
   const comissao = utils.getComissao(data?.freight || [], user as User)
-  const fretes = data?.freight
-    ?.filter((freight) => freight.status !== 'DRAFT')
-    .sort((a, b) => b.id - a.id)
+  const fretes = data?.freight?.sort((a, b) => b.id - a.id)
 
   return (
     <Layout className="w-full h-full bg-zinc-100 ">
-      <Header>
+      <Header
+        onBackButtonPressed={() => {
+          router.push('/home')
+        }}
+      >
         <Text className="mb-3 -mt-1 text-lg font-semibold text-white">
           Ficha {data?.id}
         </Text>

@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { Header, Layout } from '~/src/components/Layout'
 import { Freight } from '~/src/types'
@@ -23,6 +23,8 @@ type RouteParams = {
 }
 
 export default function App() {
+  const router = useRouter()
+  const navigation = useNavigation()
   const tabs = useMemo<Tab[]>(
     () => [
       {
@@ -59,10 +61,25 @@ export default function App() {
 
   return (
     <Layout className="w-full bg-zinc-100 h-full">
-      <Header>
+      <Header
+        onBackButtonPressed={() => {
+          try {
+            // Tenta voltar na navegação primeiro
+            if (navigation.canGoBack()) {
+              navigation.goBack()
+            } else {
+              // Se não pode voltar, vai para a lista de viagens
+              router.push('/viagens')
+            }
+          } catch {
+            // Em caso de erro, vai para a lista de viagens
+            router.push('/viagens')
+          }
+        }}
+      >
         <Skeleton show={shouldShow} colorMode="light">
           <Text className="text-2xl text-white -top-1.5">
-            {[item?.end_freight_city, item?.start_freight_city]
+            {[item?.endFreightCity, item?.startFreightCity]
               .filter(Boolean)
               .join(' / ')}
           </Text>
@@ -106,15 +123,23 @@ export default function App() {
         {item && (
           <>
             {activeTab === 'depositos' && (
-              <Depositos id={item.id} items={item.deposits} freight={item} />
+              <Depositos
+                id={item.id}
+                items={item.depositMoney}
+                freight={item}
+              />
             )}
             {activeTab === 'despesas' && (
-              <Despesas id={item.id} items={item.travels} freight={item} />
+              <Despesas
+                id={item.id}
+                items={item.travelExpense}
+                freight={item}
+              />
             )}
             {activeTab === 'abastecimentos' && (
               <Abastecimentos
                 id={item.id}
-                items={item.restocks}
+                items={item.restock}
                 freight={item}
               />
             )}

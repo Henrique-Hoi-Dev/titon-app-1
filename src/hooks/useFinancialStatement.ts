@@ -17,6 +17,15 @@ export function useFinancialStatement() {
         throw Error('Erro ao buscar os viagens')
       }
 
+      // Verifica se a resposta está vazia ou não tem dados
+      if (
+        !response.data?.data ||
+        Object.keys(response.data.data).length === 0 ||
+        !response.data.data.id
+      ) {
+        return null
+      }
+
       return mapData(response.data.data)
     },
   })
@@ -39,20 +48,14 @@ const mapData = (
   cart_id: financialStatement.cart_id,
   status: financialStatement.status,
   start_km: financialStatement.start_km || undefined,
-  final_km: financialStatement.final_km || undefined,
+  end_km: financialStatement.end_km || undefined,
   start_date: new Date(financialStatement.start_date),
-  final_date: financialStatement.final_date
-    ? new Date(financialStatement.final_date)
+  end_date: financialStatement.end_date
+    ? new Date(financialStatement.end_date)
     : undefined,
-  driver_name: financialStatement.driver_name,
-  truck_models: financialStatement.truck_models,
-  truck_board: financialStatement.truck_board,
-  truck_avatar: financialStatement.truck_avatar,
-  cart_models: financialStatement.cart_models,
-  cart_board: financialStatement.cart_board,
-  invoicing_all: financialStatement.invoicing_all || undefined,
-  medium_fuel_all: financialStatement.medium_fuel_all || undefined,
-  total_value: financialStatement.total_value,
+  total_invoicing: financialStatement.total_invoicing,
+  average_fuel_consumption: financialStatement.average_fuel_consumption,
+  total_amount: financialStatement.total_amount,
   createdAt: new Date(financialStatement.createdAt),
   updatedAt: new Date(financialStatement.updatedAt),
   freight: financialStatement.freight.map((freight) => {
@@ -65,4 +68,7 @@ const mapData = (
     ])
     return mapFreightData(camelCasedFreight)
   }),
+  truck: financialStatement.truck,
+  cart: financialStatement.cart,
+  driver: financialStatement.driver,
 })

@@ -22,7 +22,11 @@ export default function App() {
 
   return (
     <Layout className="w-full h-full bg-zinc-100 ">
-      <Header>
+      <Header
+        onBackButtonPressed={() => {
+          router.push('/home')
+        }}
+      >
         <Text className="mb-3 -mt-1 text-lg font-semibold text-white">
           Ficha {data?.id}
         </Text>

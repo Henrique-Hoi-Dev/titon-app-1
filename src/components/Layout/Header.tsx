@@ -24,6 +24,10 @@ export default function Header({
   // Verifica se pode voltar de forma mais robusta
   const canGoBack = useMemo(() => {
     try {
+      // Não mostra botão de voltar na home
+      const isHome = segments && segments.length === 1 && segments[0] === 'home'
+      if (isHome) return false
+
       // Se tem callback customizado, sempre mostra o botão
       if (onBackButtonPressed) return true
 

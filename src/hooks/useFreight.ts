@@ -83,9 +83,7 @@ export function useFreight(freightId: number) {
           | 'travelExpense'
           | 'depositMoney'
         >
-      }>(
-        `/v1/driver/freight/${freightId}/${financialStatement?.id}?summary=true`,
-      )
+      }>(`/v1/driver/freight/${freightId}/${financialStatement?.id}`)
 
       if (response.status !== 200) {
         throw Error('Erro ao buscar os viagens')

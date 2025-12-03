@@ -26,6 +26,41 @@ const hasFile = (file: { uuid?: string; name?: string } | null | undefined) => {
   return !!(file.uuid || file.name)
 }
 
+// Helper para verificar se todos os detalhes da carga estão completos
+const hasDetailsComplete = (item: Freight | null | undefined) => {
+  if (!item) return false
+  // Verifica se todos os campos do formulário estão preenchidos
+  // tonsLoaded é obrigatório, os outros são opcionais mas devem estar preenchidos para mostrar completo
+  const hasTonsLoaded =
+    item.tonsLoaded !== null &&
+    item.tonsLoaded !== undefined &&
+    item.tonsLoaded > 0
+  const hasTollCost =
+    item.tollCost !== null && item.tollCost !== undefined && item.tollCost > 0
+  const hasDischarge =
+    item.discharge !== null &&
+    item.discharge !== undefined &&
+    item.discharge >= 0
+  const hasBreakTon =
+    item.breakTon !== null && item.breakTon !== undefined && item.breakTon >= 0
+  const hasInsurance =
+    item.insurance !== null &&
+    item.insurance !== undefined &&
+    item.insurance > 0
+  const hasTaxaAdm =
+    item.taxaAdm !== null && item.taxaAdm !== undefined && item.taxaAdm > 0
+
+  // Retorna true apenas se todos os campos estiverem preenchidos
+  return (
+    hasTonsLoaded &&
+    hasTollCost &&
+    hasDischarge &&
+    hasBreakTon &&
+    hasInsurance &&
+    hasTaxaAdm
+  )
+}
+
 // Helper para buscar URL da imagem
 const getImageUrl = (
   file: { uuid?: string; name?: string } | null | undefined,
@@ -166,8 +201,13 @@ export default function Informacoes({ item, loading = false }: Props) {
               </View>
               <View className="flex-row items-center gap-x-2">
                 <MaterialCommunityIcons
-                  name="checkbox-blank-circle-outline"
+                  name={
+                    hasDetailsComplete(item)
+                      ? 'check-circle'
+                      : 'checkbox-blank-circle-outline'
+                  }
                   size={16}
+                  color={hasDetailsComplete(item) ? 'green' : 'black'}
                 />
                 <MaterialCommunityIcons
                   name="chevron-right"

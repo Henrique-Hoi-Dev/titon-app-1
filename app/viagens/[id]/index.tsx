@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter, useSegments } from 'expo-router'
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { Header, Layout } from '~/src/components/Layout'
 import { Freight } from '~/src/types'
@@ -24,7 +24,7 @@ type RouteParams = {
 
 export default function App() {
   const router = useRouter()
-  const segments = useSegments()
+  const navigation = useNavigation()
   const tabs = useMemo<Tab[]>(
     () => [
       {
@@ -63,19 +63,17 @@ export default function App() {
     <Layout className="w-full bg-zinc-100 h-full">
       <Header
         onBackButtonPressed={() => {
-          // Verifica se está na rota de viagens e se pode voltar
-          const isViagensRoute = segments[0] === 'viagens'
-
-          // Se está na rota de viagens e tem mais de 2 segmentos, pode voltar
-          // Caso contrário, redireciona para home
-          if (isViagensRoute && segments.length > 2) {
-            try {
-              router.back()
-            } catch {
-              router.replace('/home')
+          try {
+            // Tenta voltar na navegação primeiro
+            if (navigation.canGoBack()) {
+              navigation.goBack()
+            } else {
+              // Se não pode voltar, vai para a lista de viagens
+              router.push('/viagens')
             }
-          } else {
-            router.replace('/home')
+          } catch {
+            // Em caso de erro, vai para a lista de viagens
+            router.push('/viagens')
           }
         }}
       >

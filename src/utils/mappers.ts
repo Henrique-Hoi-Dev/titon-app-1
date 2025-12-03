@@ -47,6 +47,9 @@ export const mapFreightData = (
     truckKmEndTrip:
       getValue(freight, 'truckKmEndTrip', 'truck_km_end_trip') ?? 0,
     discharge: getValue(freight, 'discharge', 'discharge') ?? 0,
+    breakTon: getValue(freight, 'breakTon', 'break_ton') ?? null,
+    insurance: getValue(freight, 'insurance', 'insurance') ?? null,
+    taxaAdm: getValue(freight, 'taxaAdm', 'taxa_adm') ?? null,
     imgProofCte:
       getValue(freight, 'imgProofCte', 'img_proof_cte') ?? ({} as any),
     imgProofTicket:
@@ -112,5 +115,15 @@ export const mapFreightData = (
       ),
       updatedAt: new Date((item as any).updatedAt),
     })) as Travel[],
+    summary: (freight as any).summary
+      ? {
+          restockTotal: (freight as any).summary.restockTotal ?? 0,
+          travelExpensesTotal:
+            (freight as any).summary.travelExpensesTotal ?? 0,
+          depositMoneyTotal: (freight as any).summary.depositMoneyTotal ?? 0,
+          driverCommission: (freight as any).summary.driverCommission ?? 0,
+          valueFreightTotal: (freight as any).summary.valueFreightTotal ?? 0,
+        }
+      : undefined,
   }
 }

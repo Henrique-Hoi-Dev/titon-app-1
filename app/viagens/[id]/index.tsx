@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter, useSegments } from 'expo-router'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { Header, Layout } from '~/src/components/Layout'
 import { Freight } from '~/src/types'
@@ -23,6 +23,8 @@ type RouteParams = {
 }
 
 export default function App() {
+  const router = useRouter()
+  const segments = useSegments()
   const tabs = useMemo<Tab[]>(
     () => [
       {
@@ -59,7 +61,24 @@ export default function App() {
 
   return (
     <Layout className="w-full bg-zinc-100 h-full">
-      <Header>
+      <Header
+        onBackButtonPressed={() => {
+          // Verifica se está na rota de viagens e se pode voltar
+          const isViagensRoute = segments[0] === 'viagens'
+
+          // Se está na rota de viagens e tem mais de 2 segmentos, pode voltar
+          // Caso contrário, redireciona para home
+          if (isViagensRoute && segments.length > 2) {
+            try {
+              router.back()
+            } catch {
+              router.replace('/home')
+            }
+          } else {
+            router.replace('/home')
+          }
+        }}
+      >
         <Skeleton show={shouldShow} colorMode="light">
           <Text className="text-2xl text-white -top-1.5">
             {[item?.endFreightCity, item?.startFreightCity]

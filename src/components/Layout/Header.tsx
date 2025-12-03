@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */
 import { View } from 'react-native'
-import { useNavigation, useSegments } from 'expo-router'
+import { useNavigation, useRouter, useSegments } from 'expo-router'
 import IconButton from '../IconButton'
 import { StatusBar } from 'expo-status-bar'
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useMemo } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = {
@@ -17,9 +17,50 @@ export default function Header({
   onBackButtonPressed,
 }: PropsWithChildren<Props>): JSX.Element {
   const navigation = useNavigation()
+  const router = useRouter()
   const segments = useSegments()
-  const canGoBack = navigation.canGoBack() && segments[0]
   const insets = useSafeAreaInsets()
+
+  // Verifica se pode voltar de forma mais robusta
+  const canGoBack = useMemo(() => {
+    try {
+      // Se tem callback customizado, sempre mostra o botão
+      if (onBackButtonPressed) return true
+
+      // Verifica se pode voltar na navegação
+      const canGoBackNav = navigation.canGoBack()
+
+      // Verifica se tem segmentos (não está na raiz)
+      const hasSegments = segments && segments.length > 0
+
+      return canGoBackNav && hasSegments
+    } catch {
+      // Em caso de erro, assume que pode voltar se tiver callback
+      return !!onBackButtonPressed
+    }
+  }, [navigation, segments, onBackButtonPressed])
+
+  const handleBackPress = () => {
+    if (onBackButtonPressed) {
+      onBackButtonPressed()
+      return
+    }
+
+    try {
+      // Verifica se pode voltar antes de tentar
+      if (navigation.canGoBack()) {
+        navigation.goBack()
+      } else {
+        // Se não pode voltar, redireciona para home
+        router.replace('/home')
+      }
+    } catch (error) {
+      // Em caso de erro, redireciona para home
+      console.warn('Erro ao voltar, redirecionando para home:', error)
+      router.replace('/home')
+    }
+  }
+
   return (
     <View
       style={{
@@ -29,19 +70,15 @@ export default function Header({
     >
       <StatusBar style="light" />
       <View className={`relative flex-row ${align} justify-between w-full`}>
-        {(canGoBack || onBackButtonPressed) && (
+        {canGoBack && (
           <IconButton
             color="white"
             icon="chevron-left"
-            onPress={onBackButtonPressed ?? navigation.goBack}
+            onPress={handleBackPress}
             size={20}
           />
         )}
-        <View
-          className={`flex-1 -z-50 ${
-            (canGoBack || onBackButtonPressed) && 'pl-4'
-          } relative`}
-        >
+        <View className={`flex-1 -z-50 ${canGoBack && 'pl-4'} relative`}>
           {children}
         </View>
       </View>

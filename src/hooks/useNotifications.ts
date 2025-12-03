@@ -66,7 +66,7 @@ export default function useNotifications() {
       if (!id) {
         response = await api.post('/v1/driver/notifications/allread')
       } else {
-        response = await api.put(`/v1/driver/notifications/${id}`)
+        response = await api.put(`/v1/driver/notifications/${id}/read`)
       }
 
       if (response.status !== 200) {

@@ -1,10 +1,9 @@
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter, useSegments } from 'expo-router'
 import { useFormik } from 'formik'
 import { ScrollView, Text, View } from 'react-native'
 import { Masks } from 'react-native-mask-input'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Stringable } from '~/src/@types/utils'
 import Card from '~/src/components/Card'
 import { Button, MaskedInput } from '~/src/components/Form'
 import { Header, Layout } from '~/src/components/Layout'
@@ -26,6 +25,7 @@ type RouteParams = {
 export default function App() {
   const insets = useSafeAreaInsets()
   const router = useRouter()
+  const segments = useSegments()
   const queryClient = useQueryClient()
   const { id } = useLocalSearchParams<RouteParams>()
   const { data: item } = useFreight(Number(id))
@@ -35,11 +35,17 @@ export default function App() {
       tons_loaded?: string
       toll_cost?: string
       discharge?: string
+      break_ton?: string
+      insurance?: string
+      taxa_adm?: string
     }) => {
       const payload: {
         tons_loaded?: number
         toll_cost?: number
         discharge?: number
+        break_ton?: number
+        insurance?: number
+        taxa_adm?: number
       } = {}
 
       // Sempre envia tons_loaded se tiver valor (campo obrigatório)
@@ -60,16 +66,44 @@ export default function App() {
         }
       }
 
-      // Envia discharge se tiver valor (já em centavos)
+      // Envia discharge se tiver valor (kg de quebra - número)
       if (values.discharge && values.discharge.trim() !== '') {
-        const dischargeValue = maskValueToCents(values.discharge)
-        if (dischargeValue > 0) {
+        const dischargeValue = Number(
+          values.discharge.replace(/\D/g, '').replace(',', '.'),
+        )
+        if (!isNaN(dischargeValue) && dischargeValue > 0) {
           payload.discharge = dischargeValue
         }
       }
 
+      // Envia break_ton se tiver valor (total de kg descarregado - número)
+      if (values.break_ton && values.break_ton.trim() !== '') {
+        const breakTonValue = Number(
+          values.break_ton.replace(/\D/g, '').replace(',', '.'),
+        )
+        if (!isNaN(breakTonValue) && breakTonValue > 0) {
+          payload.break_ton = breakTonValue
+        }
+      }
+
+      // Envia insurance se tiver valor (valor seguro - em centavos)
+      if (values.insurance && values.insurance.trim() !== '') {
+        const insuranceValue = maskValueToCents(values.insurance)
+        if (insuranceValue > 0) {
+          payload.insurance = insuranceValue
+        }
+      }
+
+      // Envia taxa_adm se tiver valor (valor taxa adm - em centavos)
+      if (values.taxa_adm && values.taxa_adm.trim() !== '') {
+        const taxaAdmValue = maskValueToCents(values.taxa_adm)
+        if (taxaAdmValue > 0) {
+          payload.taxa_adm = taxaAdmValue
+        }
+      }
+
       if (Object.keys(payload).length === 0) {
-        throw new Error('Preencha pelo menos o peso entregue')
+        throw new Error('Preencha pelo menos o peso carregado')
       }
 
       const response = await api.put<{ data: Freight }>(
@@ -102,30 +136,31 @@ export default function App() {
     },
   })
 
-  const { values, handleChange, handleSubmit, setFieldValue } = useFormik<
-    Partial<
-      Stringable<
-        Freight,
-        | 'id'
-        | 'financialStatementsId'
-        | 'createdAt'
-        | 'updatedAt'
-        | 'status'
-        | 'isOnTheWay'
-      >
-    >
-  >({
+  const { values, handleChange, handleSubmit, setFieldValue } = useFormik<{
+    tonsLoaded?: string
+    tollCost?: string
+    discharge?: string
+    breakTon?: string
+    insurance?: string
+    taxaAdm?: string
+  }>({
     enableReinitialize: true,
     initialValues: {
       tonsLoaded: item?.tonsLoaded?.toString() || '',
       tollCost: centsToMaskValue(item?.tollCost),
-      discharge: centsToMaskValue(item?.discharge),
+      discharge: item?.discharge?.toString() || '',
+      breakTon: item?.breakTon?.toString() || '',
+      insurance: centsToMaskValue(item?.insurance),
+      taxaAdm: centsToMaskValue(item?.taxaAdm),
     },
     onSubmit: async (values) => {
       await mutation.mutateAsync({
         tons_loaded: values.tonsLoaded || '',
         toll_cost: values.tollCost || '',
         discharge: values.discharge || '',
+        break_ton: values.breakTon || '',
+        insurance: values.insurance || '',
+        taxa_adm: values.taxaAdm || '',
       })
     },
   })
@@ -134,7 +169,10 @@ export default function App() {
     if (item) {
       setFieldValue('tonsLoaded', item.tonsLoaded?.toString() || '')
       setFieldValue('tollCost', centsToMaskValue(item.tollCost))
-      setFieldValue('discharge', centsToMaskValue(item.discharge))
+      setFieldValue('discharge', item.discharge?.toString() || '')
+      setFieldValue('breakTon', item.breakTon?.toString() || '')
+      setFieldValue('insurance', centsToMaskValue(item.insurance))
+      setFieldValue('taxaAdm', centsToMaskValue(item.taxaAdm))
     }
   }, [item, setFieldValue])
 
@@ -145,7 +183,25 @@ export default function App() {
       }}
       className="w-full h-full bg-zinc-100 "
     >
-      <Header align="items-center">
+      <Header
+        align="items-center"
+        onBackButtonPressed={() => {
+          // Verifica se está na rota de viagens e se pode voltar
+          const isViagensRoute = segments[0] === 'viagens'
+
+          // Se está na rota de viagens e tem mais de 2 segmentos, pode voltar
+          // Caso contrário, redireciona para home
+          if (isViagensRoute && segments.length > 2) {
+            try {
+              router.back()
+            } catch {
+              router.replace('/home')
+            }
+          } else {
+            router.replace('/home')
+          }
+        }}
+      >
         <Text className="text-2xl text-white">Detalhes da carga</Text>
       </Header>
       <ScrollView className="p-4">
@@ -168,8 +224,8 @@ export default function App() {
                   <Text className="text-xs text-gray-500">Peso estimado</Text>
                   <Text className="text-sm font-medium">
                     {(item.estimatedTonnage / 1000).toLocaleString('pt-BR', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
+                      minimumFractionDigits: 3,
+                      maximumFractionDigits: 3,
                     })}{' '}
                     ton
                   </Text>
@@ -207,7 +263,11 @@ export default function App() {
                     Média do caminhão
                   </Text>
                   <Text className="text-sm font-medium">
-                    {item.fuelAvgPerKm} km/l
+                    {(item.fuelAvgPerKm / 10).toLocaleString('pt-BR', {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    })}{' '}
+                    km/l
                   </Text>
                 </View>
               )}
@@ -271,12 +331,12 @@ export default function App() {
               <MaskedInput
                 required
                 mask={numberMask}
-                label="Peso entregue"
+                label="Peso carregado"
                 value={values.tonsLoaded}
                 onChangeText={handleChange('tonsLoaded')}
               />
             </View>
-            <Text className="mt-2 font-semibold ">ton</Text>
+            <Text className="mt-2 font-semibold ">Kg</Text>
           </View>
           <MaskedInput
             mask={Masks.BRL_CURRENCY}
@@ -287,42 +347,44 @@ export default function App() {
           <View className="flex-row items-center gap-x-4">
             <View className="flex-1">
               <MaskedInput
-                mask={Masks.BRL_CURRENCY}
+                mask={numberMask}
                 label="Quebra"
-                value="0"
+                value={values.breakTon}
+                onChangeText={handleChange('breakTon')}
                 keyboardType="numeric"
               />
             </View>
-            <Text className="mt-2 font-semibold ">ton</Text>
+            <Text className="mt-2 font-semibold ">kg</Text>
           </View>
           <View className="flex-row items-center gap-x-4">
             <View className="flex-1">
               <MaskedInput
                 mask={Masks.BRL_CURRENCY}
                 label="Seguro"
-                value="0"
+                value={values.insurance}
+                onChangeText={handleChange('insurance')}
                 keyboardType="numeric"
               />
             </View>
-            <Text className="mt-2 font-semibold ">R$/ton</Text>
           </View>
           <MaskedInput
             mask={Masks.BRL_CURRENCY}
             label="Taxa ADM"
-            value="0"
+            value={values.taxaAdm}
+            onChangeText={handleChange('taxaAdm')}
             keyboardType="numeric"
           />
           <View className="flex-row items-center gap-x-4">
             <View className="flex-1">
               <MaskedInput
-                mask={Masks.BRL_CURRENCY}
+                mask={numberMask}
                 label="Descarga"
                 onChangeText={handleChange('discharge')}
                 value={values.discharge}
                 keyboardType="numeric"
               />
             </View>
-            <Text className="mt-2 font-semibold ">R$/ton</Text>
+            <Text className="mt-2 font-semibold ">kg</Text>
           </View>
         </Card>
         <Button

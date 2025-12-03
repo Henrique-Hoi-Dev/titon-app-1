@@ -8,7 +8,6 @@ import {
 import { User, useAuth } from '~/src/context/auth'
 import { getComissao, getFaturamento } from '~/src/utils'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
-import Button from '~/src/components/Button'
 import { router } from 'expo-router'
 import { Skeleton } from 'moti/skeleton'
 import { Freight } from '~/src/types'
@@ -44,15 +43,28 @@ export default function Informacoes({ item, loading = false }: Props) {
     freightLetter?: string | null
   }>({})
 
-  // Calcula totais usando os dados do objeto principal
-  const totalAbastecimentos = (item.restock ?? []).reduce(
-    (acc, curr) => acc + curr.total_value_fuel / 100,
-    0,
-  )
-  const totalDespesas = (item.travelExpense ?? []).reduce(
-    (acc, curr) => acc + curr.value / 100,
-    0,
-  )
+  // Usa valores do summary se disponível, senão calcula dos arrays
+  const totalAbastecimentos = item.summary
+    ? item.summary.restockTotal / 100
+    : (item.restock ?? []).reduce(
+        (acc, curr) => acc + curr.total_value_fuel / 100,
+        0,
+      )
+  const totalDespesas = item.summary
+    ? item.summary.travelExpensesTotal / 100
+    : (item.travelExpense ?? []).reduce(
+        (acc, curr) => acc + curr.value / 100,
+        0,
+      )
+  const valorFrete = item.summary
+    ? item.summary.valueFreightTotal / 100
+    : (getFaturamento(item as Freight) ?? 0)
+  const comissao = item.summary
+    ? item.summary.driverCommission / 100
+    : getComissao((item as Freight) ?? 0, user as User)
+  const totalDeposito = item.summary
+    ? item.summary.depositMoneyTotal / 100
+    : (item.depositMoney ?? []).reduce((acc, curr) => acc + curr.value / 100, 0)
 
   // Busca URLs das imagens quando o item carregar
   useEffect(() => {
@@ -81,13 +93,21 @@ export default function Informacoes({ item, loading = false }: Props) {
               <Text className="text-xs text-gray-400 ">Valor do Frete</Text>
               <Skeleton show={!loading} colorMode="light">
                 <Text className="text-2xl text-emerald-500">
-                  {(getFaturamento(item as Freight) ?? 0).toLocaleString(
-                    'pt-BR',
-                    {
-                      style: 'currency',
-                      currency: 'BRL',
-                    },
-                  )}
+                  {valorFrete.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </Text>
+              </Skeleton>
+            </View>
+            <View className="px-4 py-6 mx-2 bg-white rounded-lg shadow-md ">
+              <Text className="text-xs text-gray-400 ">Comissão</Text>
+              <Skeleton show={!loading} colorMode="light">
+                <Text className="text-2xl text-emerald-500">
+                  {comissao.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
                 </Text>
               </Skeleton>
             </View>
@@ -114,13 +134,10 @@ export default function Informacoes({ item, loading = false }: Props) {
               </Skeleton>
             </View>
             <View className="px-4 py-6 ml-2 mr-4 bg-white rounded-lg shadow-md ">
-              <Text className="text-xs text-gray-400 ">Comissão</Text>
+              <Text className="text-xs text-gray-400 ">Depósito</Text>
               <Skeleton show={!loading} colorMode="light">
-                <Text className="text-2xl text-emerald-500">
-                  {getComissao(
-                    (item as Freight) ?? 0,
-                    user as User,
-                  ).toLocaleString('pt-BR', {
+                <Text className="text-2xl text-red-500">
+                  {(totalDeposito || 0).toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL',
                   })}
@@ -144,7 +161,7 @@ export default function Informacoes({ item, loading = false }: Props) {
                   size={24}
                 />
                 <Text className="ml-2 text-sm text-black ">
-                  Detalhes da carga
+                  Detalhes final da carga
                 </Text>
               </View>
               <View className="flex-row items-center gap-x-2">
@@ -268,7 +285,6 @@ export default function Informacoes({ item, loading = false }: Props) {
             </Pressable>
           </Skeleton>
         </View>
-        {loading && <Button>Enviar</Button>}
       </View>
     </ScrollView>
   )

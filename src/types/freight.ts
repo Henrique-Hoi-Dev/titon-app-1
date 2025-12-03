@@ -13,6 +13,14 @@ export type FreightFile = {
   category: string
 }
 
+export type FreightSummary = {
+  restockTotal: number
+  travelExpensesTotal: number
+  depositMoneyTotal: number
+  driverCommission: number
+  valueFreightTotal: number
+}
+
 export type FreightResponse = {
   id: number
   financial_statements_id: number
@@ -39,6 +47,9 @@ export type FreightResponse = {
   toll_cost: number
   truck_km_end_trip: number
   discharge: number
+  break_ton?: number
+  insurance?: number
+  taxa_adm?: number
   img_proof_cte: FreightFile
   img_proof_ticket: FreightFile
   img_proof_freight_letter: FreightFile
@@ -47,6 +58,7 @@ export type FreightResponse = {
   restock: Restock[]
   travelExpense: Travel[]
   depositMoney: Deposit[]
+  summary?: FreightSummary
 }
 
 export declare type Freight = {
@@ -75,6 +87,9 @@ export declare type Freight = {
   tollCost: number | null
   truckKmEndTrip: number | null
   discharge: number | null
+  breakTon?: number | null
+  insurance?: number | null
+  taxaAdm?: number | null
   imgProofCte: FreightFile
   imgProofTicket: FreightFile
   imgProofFreightLetter: FreightFile
@@ -84,4 +99,5 @@ export declare type Freight = {
   restock?: import('./restock').Restock[]
   travelExpense?: import('./travel').Travel[]
   depositMoney?: import('./deposit').Deposit[]
+  summary?: import('./freight').FreightSummary
 }

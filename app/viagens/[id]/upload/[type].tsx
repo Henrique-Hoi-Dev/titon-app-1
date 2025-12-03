@@ -88,7 +88,17 @@ export default function Upload() {
 
   return (
     <Layout className="w-full h-full bg-zinc-100">
-      <Header>
+      <Header
+        onBackButtonPressed={() => {
+          try {
+            router.back()
+          } catch (error) {
+            // Se não pode voltar, redireciona para home
+            console.warn('Erro ao voltar, redirecionando para home:', error)
+            router.replace('/home')
+          }
+        }}
+      >
         <Text className="text-2xl text-white -top-1.5">{titles[type]}</Text>
       </Header>
       <ScrollView
